@@ -1,2 +1,5 @@
 # CodebaseAI
-Run AI Inference against a whole codebase on your system.
+
+Run AI Inference against a whole GoLang codebase on your system.
+
+

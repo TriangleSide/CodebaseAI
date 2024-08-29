@@ -1,20 +1,24 @@
 import React from 'react';
 import { Button, Container } from 'react-bootstrap';
-import ApiClient from "./APIClient";
+import ApiClient, {AmalgamResponse} from "./APIClient";
 
 export interface AmalgamProps {}
 export interface AmalgamState {
-    amalgamData: string;
+    amalgam: AmalgamResponse | null;
     loading: boolean;
     error: string | null;
     copied: boolean;
+}
+
+export function AmalgamSummary(amalgam: AmalgamResponse | null): string {
+    return "Character count: " + amalgam?.content.length + ". Token count: " + amalgam?.tokenCount + "."
 }
 
 export default class Amalgam extends React.Component<AmalgamProps, AmalgamState> {
     constructor(props: {}) {
         super(props);
         this.state = {
-            amalgamData: '',
+            amalgam: null,
             loading: true,
             error: null,
             copied: false
@@ -28,43 +32,70 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
     fetchAmalgamData = async () => {
         try {
             const data = await ApiClient.fetchAmalgam();
-            this.setState({ amalgamData: data, loading: false });
+            this.setState({
+                amalgam: data,
+                loading: false
+            });
         } catch (err) {
             console.error('Failed to fetch amalgam data:', err);
             if (err instanceof Error) {
-                this.setState({ error: err.message, loading: false });
+                this.setState({
+                    error: err.message,
+                    loading: false,
+                });
             } else {
-                this.setState({ error: 'An unknown error occurred', loading: false });
+                this.setState({
+                    error: 'An unknown error occurred',
+                    loading: false,
+                });
             }
         }
     };
 
     handleCopy = () => {
-        navigator.clipboard.writeText(this.state.amalgamData);
+        let amalgamTxt: string = ""
+        if (this.state.amalgam) {
+            amalgamTxt = this.state.amalgam.content
+        }
+        navigator.clipboard.writeText(amalgamTxt);
         this.setState({ copied: true });
         setTimeout(() => this.setState({ copied: false }), 2000);
     };
 
     render() {
-        const { amalgamData, loading, error, copied } = this.state;
+        const { amalgam, loading, error, copied } = this.state;
 
+        let content: React.JSX.Element;
         if (loading) {
-            return <div>Loading...</div>;
-        }
-
-        if (error) {
-            return <div>Error: {error}</div>;
+            content = (
+                <div>Loading...</div>
+            )
+        } else if (error) {
+            content = (
+                <div>Error: {error}</div>
+            )
+        } else {
+            content = (
+                <div>
+                    <Button onClick={this.handleCopy} variant={copied ? "success" : "primary"}>
+                        {copied ? "Copied!" : "Copy to Clipboard"}
+                    </Button>
+                    <br/><br/>
+                    <p>
+                        {AmalgamSummary(amalgam)}
+                    </p>
+                    <div className="amalgam-container">
+                        {amalgam?.content}
+                    </div>
+                </div>
+            )
         }
 
         return (
             <Container>
+                <br/>
                 <h1>Amalgam Data</h1>
-                <Button onClick={this.handleCopy} variant={copied ? "success" : "primary"}>
-                    {copied ? "Copied!" : "Copy to Clipboard"}
-                </Button>
-                <div className="amalgam-container">
-                    {amalgamData}
-                </div>
+                {content}
             </Container>
         );
     }

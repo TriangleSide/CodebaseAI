@@ -28,7 +28,7 @@ func NewOpenAIChat(cfg *config.Config) ai.Chat {
 	}
 }
 
-func (model *openaiChat) Stream(ctx context.Context, messages []model.Message) (<-chan string, <-chan error) {
+func (model *openaiChat) Stream(ctx context.Context, messages []model.ChatMessage) (<-chan string, <-chan error) {
 	openaiMsgs := make([]openai.ChatCompletionMessage, 0)
 
 	openaiMsgs = append(openaiMsgs, openai.ChatCompletionMessage{

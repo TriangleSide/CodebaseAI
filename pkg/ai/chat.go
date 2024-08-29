@@ -7,5 +7,5 @@ import (
 )
 
 type Chat interface {
-	Stream(context.Context, []model.Message) (<-chan string, <-chan error)
+	Stream(context.Context, []model.ChatMessage) (<-chan string, <-chan error)
 }

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"github.com/tiktoken-go/tokenizer"
 )
 
 const (
@@ -19,11 +20,16 @@ const (
 )
 
 var (
+	tokenizerCodec      tokenizer.Codec
 	allowedExtensions   map[string]struct{}
 	disallowedPathParts []string
 )
 
 func init() {
+	var err error
+	if tokenizerCodec, err = tokenizer.ForModel(tokenizer.GPT4); err != nil {
+		panic("Unable to get tokenizer codec for GPT4 model.")
+	}
 	allowedExtensions = map[string]struct{}{
 		GoExtension: {},
 		".md":       {},
@@ -45,20 +51,20 @@ type fileContent struct {
 	Package string
 }
 
-func Get(root string) (string, error) {
+func Get(root string) (string, int, error) {
 	moduleName, err := getModuleName(root)
 	if err != nil {
-		return "", err
+		return "", -1, err
 	}
 
 	files, err := collectFiles(root)
 	if err != nil {
-		return "", err
+		return "", -1, err
 	}
 
 	fileContents, err := readFiles(root, moduleName, files)
 	if err != nil {
-		return "", err
+		return "", -1, err
 	}
 
 	orderedFiles := orderFiles(fileContents)
@@ -68,7 +74,13 @@ func Get(root string) (string, error) {
 		sb.WriteString(fmt.Sprintf("// Start File: %s\n\n%s\n\n// End File: %s\n\n", fc.Path, strings.TrimSpace(fc.Content), fc.Path))
 	}
 
-	return sb.String(), nil
+	amalgamStr := sb.String()
+	tokenIds, _, err := tokenizerCodec.Encode(amalgamStr)
+	if err != nil {
+		return amalgamStr, -1, err
+	}
+
+	return amalgamStr, len(tokenIds), nil
 }
 
 func getModuleName(root string) (string, error) {

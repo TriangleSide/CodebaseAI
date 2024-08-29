@@ -1,12 +1,17 @@
 package model
 
-type Message struct {
+type AmalgamResponse struct {
+	Content    string `json:"content"`
+	TokenCount int    `json:"tokenCount"`
+}
+
+type ChatMessage struct {
 	Content string `json:"content"`
 	Role    string `json:"role"`
 }
 
 type ChatRequest struct {
-	Messages []Message `json:"messages"`
+	Messages []ChatMessage `json:"messages"`
 }
 
 type ChatResponse struct {

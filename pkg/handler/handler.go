@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/sirupsen/logrus"
 
@@ -26,19 +25,21 @@ func New(cfg *config.Config, aiChat ai.Chat) *Handler {
 }
 
 func (h *Handler) GetAmalgam(w http.ResponseWriter, r *http.Request) {
-	allSrcFiles, err := amalgam.Get(h.cfg.ProjectRoot)
+	amalgamContent, tokenCount, err := amalgam.Get(h.cfg.ProjectRoot)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Content-Size", strconv.Itoa(len(allSrcFiles)))
-	w.WriteHeader(http.StatusOK)
+	amalgamResponse := model.AmalgamResponse{
+		Content:    amalgamContent,
+		TokenCount: tokenCount,
+	}
 
-	if _, err := w.Write([]byte(allSrcFiles)); err != nil {
-		logrus.WithError(err).Error("Failed to write response.")
-		w.WriteHeader(http.StatusInternalServerError)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(amalgamResponse); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -49,17 +50,14 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 
 	var chatRequest model.ChatRequest
 	if err := json.NewDecoder(r.Body).Decode(&chatRequest); err != nil {
-		logrus.WithError(err).Error("Failed to decode chat request")
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	_ = r.Body.Close()
 
 	flusher, writerIsFlusher := w.(http.Flusher)
 	if !writerIsFlusher {
-		logrus.Error("Writer is not a Flusher.")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		panic("Writer is not a Flusher.")
 	}
 	defer flusher.Flush()
 

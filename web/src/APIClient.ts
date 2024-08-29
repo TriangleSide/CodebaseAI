@@ -1,5 +1,3 @@
-import Constants from './Constants';
-
 export interface Message {
     role: 'user' | 'assistant';
     content: string;
@@ -14,18 +12,27 @@ export interface ApiStreamResponse {
     success: boolean | null;
 }
 
+export interface AmalgamResponse {
+    content: string;
+    tokenCount: number;
+}
+
+export type TokenCallback = (token: string) => void;
+
 export default class ApiClient {
-    static async fetchAmalgam(): Promise<string> {
-        const response = await fetch(`${Constants.API_BASE_URL}/amalgam`);
+    public static readonly API_BASE_URL = "http://127.0.0.1:8080/api";
+
+    static async fetchAmalgam(): Promise<AmalgamResponse> {
+        const response = await fetch(`${ApiClient.API_BASE_URL}/amalgam`);
         if (response.ok) {
-            return response.text();
+            return response.json();
         } else {
             throw new Error(`${response.status} ${response.statusText}`);
         }
     }
 
-    static async sendMessage(messages: Message[]): Promise<ReadableStream<Uint8Array>> {
-        const response = await fetch(`${Constants.API_BASE_URL}/chat`, {
+    static async sendMessage(messages: Message[], tokenCallback: TokenCallback): Promise<void> {
+        const response = await fetch(`${ApiClient.API_BASE_URL}/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -34,7 +41,31 @@ export default class ApiClient {
         });
 
         if (response.ok && response.body != null) {
-            return response.body;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) {
+                    break;
+                }
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n').filter(Boolean);
+                for (const line of lines) {
+                    if (line.trim()) {
+                        const streamResponse: ApiStreamResponse = JSON.parse(line);
+                        if (streamResponse.success != null) {
+                            if (!streamResponse.success) {
+                                throw new Error('Error during token stream.');
+                            }
+                            break;
+                        } else if (streamResponse.content != null) {
+                            tokenCallback(streamResponse.content);
+                        } else {
+                            throw new Error('Unknown response stream state.');
+                        }
+                    }
+                }
+            }
         } else {
             throw new Error(`${response.status} ${response.statusText}`);
         }

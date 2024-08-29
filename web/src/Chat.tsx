@@ -1,21 +1,17 @@
 import React from 'react';
-import { Container, Form, Button, Card } from 'react-bootstrap';
-import { API_BASE_URL } from './Constants';
-import ReactMarkdown from 'react-markdown';
-import ApiClient, {Message} from "./APIClient";
-
-interface ApiStreamResponse {
-    content: string | null;
-    success: boolean | null;
-}
+import { Container, Form, Button } from 'react-bootstrap';
+import ApiClient, { AmalgamResponse, Message } from "./APIClient";
+import ChatCard from "./ChatCard";
+import {AmalgamSummary} from "./Amalgam";
 
 export interface ChatProps {}
 export interface ChatState {
+    error: string | null;
+    amalgamLoading: boolean;
+    amalgamData: AmalgamResponse | null;
     messages: Message[];
     input: string;
     loading: boolean;
-    error: string | null;
-    amalgamData: string | null;
 }
 
 export default class Chat extends React.Component<ChatProps, ChatState> {
@@ -24,11 +20,12 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
     constructor(props: ChatProps) {
         super(props);
         this.state = {
+            error: null,
+            amalgamLoading: true,
+            amalgamData: null,
             messages: [],
             input: '',
             loading: false,
-            error: null,
-            amalgamData: null,
         };
         this.chatContainerRef = React.createRef();
     }
@@ -40,10 +37,10 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
     fetchAmalgamData = async () => {
         try {
             const data = await ApiClient.fetchAmalgam();
-            this.setState({ amalgamData: data });
+            this.setState({ amalgamData: data, amalgamLoading: false });
         } catch (err) {
             console.error('Failed to fetch amalgam data:', err);
-            this.setState({ amalgamData: null });
+            this.setState({ amalgamData: null, amalgamLoading: false });
         }
     };
 
@@ -57,6 +54,21 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
             loading: true,
         }));
 
+        const tokenCallback = (token: string) => {
+            this.setState((prevState) => {
+                const updatedMessages = [...prevState.messages];
+                const lastMessage = updatedMessages[updatedMessages.length - 1];
+
+                if (lastMessage && lastMessage.role === 'assistant') {
+                    lastMessage.content += token;
+                } else {
+                    updatedMessages.push({ role: 'assistant', content: token });
+                }
+
+                return { messages: updatedMessages };
+            });
+        };
+
         try {
             const chatRequestMessages = this.state.messages.map(msg => ({
                 role: msg.role,
@@ -68,45 +80,9 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
                 content: newMessage.content,
             } as Message);
 
-            chatRequestMessages[0].content = this.state.amalgamData + "// User request below.\n\n" + chatRequestMessages[0].content;
+            chatRequestMessages[0].content = this.state.amalgamData?.content + "// User request below.\n\n" + chatRequestMessages[0].content;
 
-            const response = await ApiClient.sendMessage(chatRequestMessages);
-            const reader = response.getReader();
-            const decoder = new TextDecoder();
-
-            if (reader) {
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-
-                    const chunk = decoder.decode(value, { stream: true });
-                    const lines = chunk.split('\n').filter(Boolean);
-                    for (const line of lines) {
-                        if (line.trim()) {
-                            const streamResponse: ApiStreamResponse = JSON.parse(line);
-                            if (streamResponse.success != null) {
-                                break;
-                            } else if (streamResponse.content != null) {
-                                this.setState((prevState) => {
-                                    const updatedMessages = [...prevState.messages];
-                                    const lastMessage = updatedMessages[updatedMessages.length - 1];
-
-                                    if (lastMessage && lastMessage.role === 'assistant') {
-                                        lastMessage.content += streamResponse.content;
-                                    } else {
-                                        updatedMessages.push({ role: 'assistant', content: streamResponse.content } as Message);
-                                    }
-
-                                    return { messages: updatedMessages };
-                                });
-                            } else {
-                                throw new Error('Unknown response stream state.');
-                            }
-                        }
-                    }
-                }
-            }
-
+            await ApiClient.sendMessage(chatRequestMessages, tokenCallback);
             this.setState({ loading: false });
         } catch (error) {
             this.setState((prevState) => ({
@@ -133,39 +109,40 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
     }
 
     render() {
-        const { messages, input, loading, amalgamData } = this.state;
+        const { messages, input, loading, amalgamLoading, amalgamData } = this.state;
+
+        let amalgamMsg: string;
+        if (amalgamLoading) {
+            amalgamMsg = "Loading codebase amalgam..."
+        } else if (amalgamData != null) {
+            amalgamMsg = AmalgamSummary(amalgamData)
+        } else {
+            amalgamMsg = "Error loading codebase amalgam."
+        }
 
         return (
             <Container>
+                <br/>
                 <h1>Codebase AI Chat</h1>
-                <p>This chat app prepends the codebase to the chat.</p>
-                <div ref={this.chatContainerRef} className="chat-container" style={{ maxHeight: '500px', overflowY: 'auto', marginBottom: '20px' }}>
-                    <Card key={"amalgam_counter"} className={`mb-2 'bg-light'}`}>
-                        <Card.Body>
-                            {amalgamData != null
-                                ? <Card.Text>The amalgam has {amalgamData.length} characters.</Card.Text>
-                                : <Card.Text>No amalgam data.</Card.Text>}
-                        </Card.Body>
-                    </Card>
+                <p>This app adds the codebase amalgam to the beginning of the chat.</p>
+                <br/>
+                <div ref={this.chatContainerRef} className="chat-container">
+                    <ChatCard key={"amalgam"} role={"codebase"} content={amalgamMsg}/>
                     {messages.map((msg, index) => (
-                        <Card key={index} className={`mb-2 text-white bg-dark`}>
-                            <Card.Body>
-                                <ReactMarkdown>{`**${msg.role === 'user' ? 'User' : 'AI'}:**\n\n${msg.content}`}</ReactMarkdown>
-                            </Card.Body>
-                        </Card>
+                        <ChatCard key={index} role={msg.role} content={msg.content}/>
                     ))}
                 </div>
                 <Form.Group className="mb-3">
                     <Form.Control
                         className="text-white bg-dark"
                         type="text"
-                        placeholder="Type a message..."
+                        placeholder="Chat with AI about your codebase..."
                         value={input}
                         onChange={this.handleInputChange}
-                        onKeyPress={this.handleKeyPress}
+                        onKeyUp={this.handleKeyPress}
                     />
                 </Form.Group>
-                <Button onClick={this.handleSendMessage} variant="primary" disabled={loading}>
+                <Button onClick={this.handleSendMessage} variant="primary" disabled={loading || amalgamLoading}>
                     {loading ? 'Sending...' : 'Send'}
                 </Button>
             </Container>

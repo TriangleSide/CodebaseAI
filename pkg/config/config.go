@@ -11,7 +11,7 @@ type Config struct {
 	ApiKey       string `split_words:"true" validate:"required"`
 	LogLevel     string `split_words:"true" default:"INFO" validate:"required,oneof=TRACE DEBUG INFO WARN ERROR FATAL"`
 	ProjectRoot  string `split_words:"true" validate:"required"`
-	ModelVersion string `split_words:"true" default:"gpt-4o" validate:"required"`
+	ModelVersion string `split_words:"true" default:"gpt-4o" validate:"required,oneof=gpt-4o"`
 }
 
 func MustProcessConfig() *Config {

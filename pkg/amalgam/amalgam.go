@@ -14,20 +14,27 @@ import (
 )
 
 const (
-	GoMod = "go.mod"
-
-	GoExtension       = ".go"
-	MarkdownExtension = ".md"
+	GoMod       = "go.mod"
+	GoExtension = ".go"
 )
 
 var (
-	allowedExtensions map[string]struct{}
+	allowedExtensions   map[string]struct{}
+	disallowedPathParts []string
 )
 
 func init() {
 	allowedExtensions = map[string]struct{}{
-		GoExtension:       {},
-		MarkdownExtension: {},
+		GoExtension: {},
+		".md":       {},
+		".ts":       {},
+		".tsx":      {},
+		".html":     {},
+		".css":      {},
+	}
+	disallowedPathParts = []string{
+		"bin",
+		"node_modules",
 	}
 }
 
@@ -95,9 +102,19 @@ func getModuleName(root string) (string, error) {
 
 func collectFiles(root string) ([]string, error) {
 	var files []string
+
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
+		}
+
+		pathParts := strings.Split(path, string(filepath.Separator))
+		for _, pathPart := range pathParts {
+			for _, disallowedPathPart := range disallowedPathParts {
+				if pathPart == disallowedPathPart {
+					return nil
+				}
+			}
 		}
 
 		if !info.IsDir() {
@@ -106,6 +123,7 @@ func collectFiles(root string) ([]string, error) {
 				files = append(files, path)
 			}
 		}
+
 		return nil
 	})
 

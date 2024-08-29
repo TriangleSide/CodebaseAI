@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/TriangleSide/CodebaseAI/pkg/ai/openai"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -20,7 +21,9 @@ func main() {
 	logLevel, _ := logrus.ParseLevel(cfg.LogLevel)
 	logrus.SetLevel(logLevel)
 
-	serverHandler := handler.New(cfg)
+	aiChat := openai.NewOpenAIChat(cfg)
+
+	serverHandler := handler.New(cfg, aiChat)
 	if err := server.Run(serverHandler); err != nil {
 		logrus.WithError(err).Fatal("Encountered an error while running the server.")
 	}

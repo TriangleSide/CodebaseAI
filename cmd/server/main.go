@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/TriangleSide/CodebaseAI/pkg/ai/openai"
 	"os"
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/TriangleSide/CodebaseAI/pkg/ai/openai"
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
 	"github.com/TriangleSide/CodebaseAI/pkg/handler"
 	"github.com/TriangleSide/CodebaseAI/pkg/server"

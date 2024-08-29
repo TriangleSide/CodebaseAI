@@ -1,3 +1,23 @@
+body {
+    background-color: #121212;
+    color: #E0E0E0;
+}
+
+.navbar {
+    background-color: #333;
+    color: #fff;
+}
+
+.navbar-brand, .nav-link {
+    color: #fff !important;
+}
+
+.container {
+    background-color: #1E1E1E;
+    padding: 20px;
+    border-radius: 5px;
+}
+
 .amalgam-container {
     background-color: #2d2d2d;
     color: #f8f8f2;
@@ -8,4 +28,30 @@
     white-space: pre-wrap;
     overflow-x: auto;
     font-size: small;
+}
+
+.card {
+    background-color: #2C2C2C;
+    color: #E0E0E0;
+    border: none;
+}
+
+.btn-primary {
+    background-color: #6200EE;
+    border-color: #6200EE;
+}
+
+.btn-success {
+    background-color: #03DAC6;
+    border-color: #03DAC6;
+}
+
+.form-control {
+    background-color: #333;
+    color: #fff;
+    border: none;
+}
+
+::placeholder {
+    color: #757575;
 }

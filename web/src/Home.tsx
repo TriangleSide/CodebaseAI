@@ -1,11 +1,19 @@
 import React from 'react';
 
-const Home: React.FC = () => {
-    return (
-        <div>
-            <h1>Home</h1>
-        </div>
-    );
-};
+export interface HomeProps {}
+export interface HomeState {}
 
-export default Home;
+export default class Home extends React.Component<HomeProps, HomeState> {
+    constructor(props: {}) {
+        super(props);
+        this.state = {};
+    }
+
+    render() {
+        return (
+            <div>
+                <h1>Home</h1>
+            </div>
+        );
+    }
+}

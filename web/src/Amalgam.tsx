@@ -1,61 +1,71 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button, Container } from 'react-bootstrap';
-import { API_BASE_URL } from './Constants';
+import ApiClient from "./APIClient";
 
-const Amalgam: React.FC = () => {
-    const [amalgamData, setAmalgamData] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [copied, setCopied] = useState<boolean>(false);
+export interface AmalgamProps {}
+export interface AmalgamState {
+    amalgamData: string;
+    loading: boolean;
+    error: string | null;
+    copied: boolean;
+}
 
-    useEffect(() => {
-        const fetchAmalgamData = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/amalgam`);
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status} ${response.statusText}`);
-                }
-                const data = await response.text();
-                setAmalgamData(data);
-            } catch (err) {
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError('An unknown error occurred');
-                }
-            } finally {
-                setLoading(false);
-            }
+export default class Amalgam extends React.Component<AmalgamProps, AmalgamState> {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            amalgamData: '',
+            loading: true,
+            error: null,
+            copied: false
         };
+    }
 
-        fetchAmalgamData();
-    }, []);
+    componentDidMount() {
+        this.fetchAmalgamData();
+    }
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(amalgamData);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    fetchAmalgamData = async () => {
+        try {
+            const data = await ApiClient.fetchAmalgam();
+            this.setState({ amalgamData: data, loading: false });
+        } catch (err) {
+            console.error('Failed to fetch amalgam data:', err);
+            if (err instanceof Error) {
+                this.setState({ error: err.message, loading: false });
+            } else {
+                this.setState({ error: 'An unknown error occurred', loading: false });
+            }
+        }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
+    handleCopy = () => {
+        navigator.clipboard.writeText(this.state.amalgamData);
+        this.setState({ copied: true });
+        setTimeout(() => this.setState({ copied: false }), 2000);
+    };
+
+    render() {
+        const { amalgamData, loading, error, copied } = this.state;
+
+        if (loading) {
+            return <div>Loading...</div>;
+        }
+
+        if (error) {
+            return <div>Error: {error}</div>;
+        }
+
+        return (
+            <Container>
+                <h1>Amalgam Data</h1>
+                <Button onClick={this.handleCopy} variant={copied ? "success" : "primary"}>
+                    {copied ? "Copied!" : "Copy to Clipboard"}
+                </Button>
+                <div className="amalgam-container">
+                    {amalgamData}
+                </div>
+            </Container>
+        );
     }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
-
-    return (
-        <Container>
-            <h1>Amalgam Data</h1>
-            <Button onClick={handleCopy} variant={copied ? "success" : "primary"}>
-                {copied ? "Copied!" : "Copy to Clipboard"}
-            </Button>
-            <div className="amalgam-container">
-                {amalgamData}
-            </div>
-        </Container>
-    );
-};
-
-export default Amalgam;
+}

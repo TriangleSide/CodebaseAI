@@ -20,9 +20,10 @@ const (
 )
 
 var (
-	tokenizerCodec      tokenizer.Codec
-	allowedExtensions   map[string]struct{}
-	disallowedPathParts []string
+	tokenizerCodec          tokenizer.Codec
+	allowedExtensions       map[string]struct{}
+	disallowedPaths         map[string]struct{}
+	disallowedFileNameParts map[string]struct{}
 )
 
 func init() {
@@ -38,9 +39,12 @@ func init() {
 		".html":     {},
 		".css":      {},
 	}
-	disallowedPathParts = []string{
-		"bin",
-		"node_modules",
+	disallowedPaths = map[string]struct{}{
+		"bin":          {},
+		"node_modules": {},
+	}
+	disallowedFileNameParts = map[string]struct{}{
+		"coverage.html": {},
 	}
 }
 
@@ -122,14 +126,19 @@ func collectFiles(root string) ([]string, error) {
 
 		pathParts := strings.Split(path, string(filepath.Separator))
 		for _, pathPart := range pathParts {
-			for _, disallowedPathPart := range disallowedPathParts {
-				if pathPart == disallowedPathPart {
-					return nil
-				}
+			if _, hasPathPart := disallowedPaths[strings.ToLower(pathPart)]; hasPathPart {
+				return nil
 			}
 		}
 
 		if !info.IsDir() {
+			_, file := filepath.Split(path)
+			for disallowedFileNamePart := range disallowedFileNameParts {
+				if strings.Contains(strings.ToLower(file), strings.ToLower(disallowedFileNamePart)) {
+					return nil
+				}
+			}
+
 			ext := filepath.Ext(path)
 			if _, ok := allowedExtensions[ext]; ok {
 				files = append(files, path)

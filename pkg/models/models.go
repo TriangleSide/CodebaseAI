@@ -1,4 +1,4 @@
-package model
+package models
 
 type AmalgamResponse struct {
 	Content    string `json:"content"`

@@ -9,7 +9,7 @@ import (
 
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
-	"github.com/TriangleSide/CodebaseAI/pkg/model"
+	"github.com/TriangleSide/CodebaseAI/pkg/models"
 )
 
 //go:embed instructions.txt
@@ -28,7 +28,7 @@ func NewOpenAIChat(cfg *config.Config) ai.Chat {
 	}
 }
 
-func (model *openaiChat) Stream(ctx context.Context, messages []model.ChatMessage) (<-chan string, <-chan error) {
+func (model *openaiChat) Stream(ctx context.Context, messages []models.ChatMessage) (<-chan string, <-chan error) {
 	openaiMsgs := make([]openai.ChatCompletionMessage, 0)
 
 	openaiMsgs = append(openaiMsgs, openai.ChatCompletionMessage{

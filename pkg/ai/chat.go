@@ -3,9 +3,9 @@ package ai
 import (
 	"context"
 
-	"github.com/TriangleSide/CodebaseAI/pkg/model"
+	"github.com/TriangleSide/CodebaseAI/pkg/models"
 )
 
 type Chat interface {
-	Stream(context.Context, []model.ChatMessage) (<-chan string, <-chan error)
+	Stream(context.Context, []models.ChatMessage) (<-chan string, <-chan error)
 }

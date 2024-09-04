@@ -8,24 +8,51 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/ai/openai"
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
 	"github.com/TriangleSide/CodebaseAI/pkg/handler"
-	"github.com/TriangleSide/CodebaseAI/pkg/server"
+	"github.com/TriangleSide/CodebaseAI/pkg/middleware"
+	baseconfig "github.com/TriangleSide/GoBase/pkg/config"
+	"github.com/TriangleSide/GoBase/pkg/config/envprocessor"
+	"github.com/TriangleSide/GoBase/pkg/http/api"
+	basemiddleware "github.com/TriangleSide/GoBase/pkg/http/middleware"
+	baseserver "github.com/TriangleSide/GoBase/pkg/http/server"
+	"github.com/TriangleSide/GoBase/pkg/logger"
 )
 
 func main() {
-	logrus.SetFormatter(&logrus.TextFormatter{})
-	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.InfoLevel)
-	logrus.Info("Starting server.")
+	logger.MustConfigure()
+	logrus.Info("Starting the server.")
 
-	cfg := config.MustProcessConfig()
-	logLevel, _ := logrus.ParseLevel(cfg.LogLevel)
-	logrus.SetLevel(logLevel)
+	cfg, err := envprocessor.ProcessAndValidate[config.Config]()
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to process configuration")
+	}
+
+	httpCommonMiddleware := []basemiddleware.Middleware{
+		middleware.Cors,
+	}
 
 	aiChat := openai.NewOpenAIChat(cfg)
+	httpEndpointHandlers := []api.HTTPEndpointHandler{
+		handler.New(cfg, aiChat),
+	}
 
-	serverHandler := handler.New(cfg, aiChat)
-	if err := server.Run(serverHandler); err != nil {
-		logrus.WithError(err).Fatal("Encountered an error while running the server.")
+	httpServer, err := baseserver.New(baseserver.WithConfigProvider(func() (*baseconfig.HTTPServer, error) {
+		httpConfig, err := envprocessor.ProcessAndValidate[baseconfig.HTTPServer]()
+		if err != nil {
+			return nil, err
+		}
+		httpConfig.HTTPServerBindIP = "127.0.0.1"
+		httpConfig.HTTPServerBindPort = 8080
+		httpConfig.HTTPServerTLS = false
+		return httpConfig, nil
+	}))
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to create HTTP server")
+	}
+
+	if err := httpServer.Run(httpCommonMiddleware, httpEndpointHandlers, func() {
+		logrus.Info("The HTTP server has started.")
+	}); err != nil {
+		logrus.WithError(err).Fatal("Encountered an error while running the HTTP server.")
 	}
 
 	os.Exit(0)

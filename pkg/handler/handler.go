@@ -9,7 +9,8 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
 	"github.com/TriangleSide/CodebaseAI/pkg/amalgam"
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
-	"github.com/TriangleSide/CodebaseAI/pkg/model"
+	"github.com/TriangleSide/CodebaseAI/pkg/models"
+	"github.com/TriangleSide/GoBase/pkg/http/api"
 )
 
 type Handler struct {
@@ -31,7 +32,7 @@ func (h *Handler) GetAmalgam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	amalgamResponse := model.AmalgamResponse{
+	amalgamResponse := models.AmalgamResponse{
 		Content:    amalgamContent,
 		TokenCount: tokenCount,
 	}
@@ -48,7 +49,7 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json-seq")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
-	var chatRequest model.ChatRequest
+	var chatRequest models.ChatRequest
 	if err := json.NewDecoder(r.Body).Decode(&chatRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -71,12 +72,12 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 		select {
 		case token, ok := <-tokenStream:
 			if ok {
-				if err := encoder.Encode(model.ChatResponse{Content: &token, Success: nil}); err != nil {
+				if err := encoder.Encode(models.ChatResponse{Content: &token, Success: nil}); err != nil {
 					logrus.WithError(err).Error("Failed to encode chat content.")
 					return
 				}
 			} else {
-				if err := encoder.Encode(model.ChatResponse{Content: nil, Success: &success}); err != nil {
+				if err := encoder.Encode(models.ChatResponse{Content: nil, Success: &success}); err != nil {
 					logrus.WithError(err).Error("Failed to encode chat success.")
 				}
 				return
@@ -85,7 +86,7 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 			if ok {
 				logrus.WithError(err).Error("Error during chat streaming.")
 				success = false
-				if err := encoder.Encode(model.ChatResponse{Content: nil, Success: &success}); err != nil {
+				if err := encoder.Encode(models.ChatResponse{Content: nil, Success: &success}); err != nil {
 					logrus.WithError(err).Error("Failed to encode chat error.")
 				}
 				return
@@ -95,4 +96,23 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 		}
 		flusher.Flush()
 	}
+}
+
+func (h *Handler) AcceptHTTPAPIBuilder(builder *api.HTTPAPIBuilder) {
+	builder.MustRegister("/api/amalgam", http.MethodOptions, &api.Handler{
+		Middleware: nil,
+		Handler:    func(w http.ResponseWriter, r *http.Request) {},
+	})
+	builder.MustRegister("/api/amalgam", http.MethodGet, &api.Handler{
+		Middleware: nil,
+		Handler:    h.GetAmalgam,
+	})
+	builder.MustRegister("/api/chat", http.MethodOptions, &api.Handler{
+		Middleware: nil,
+		Handler:    func(w http.ResponseWriter, r *http.Request) {},
+	})
+	builder.MustRegister("/api/chat", http.MethodPost, &api.Handler{
+		Middleware: nil,
+		Handler:    h.Chat,
+	})
 }

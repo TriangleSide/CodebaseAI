@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/TriangleSide/GoBase/pkg/http/parameters"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -46,15 +47,15 @@ func (h *Handler) GetAmalgam(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json-seq")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-
-	var chatRequest models.ChatRequest
-	if err := json.NewDecoder(r.Body).Decode(&chatRequest); err != nil {
+	chatRequest, err := parameters.Decode[models.ChatRequest](r)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	_ = r.Body.Close()
+
+	w.Header().Set("Content-Type", "application/json-seq")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusOK)
 
 	flusher, writerIsFlusher := w.(http.Flusher)
 	if !writerIsFlusher {
@@ -65,8 +66,6 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 	tokenStream, errorStream := h.aiChat.Stream(r.Context(), chatRequest.Messages)
 	encoder := json.NewEncoder(w)
 	success := true
-
-	w.WriteHeader(http.StatusOK)
 
 	for {
 		select {
@@ -99,19 +98,16 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AcceptHTTPAPIBuilder(builder *api.HTTPAPIBuilder) {
-	builder.MustRegister("/api/amalgam", http.MethodOptions, &api.Handler{
-		Middleware: nil,
-		Handler:    func(w http.ResponseWriter, r *http.Request) {},
-	})
-	builder.MustRegister("/api/amalgam", http.MethodGet, &api.Handler{
+	const amalgamPath = "/api/amalgam"
+	builder.MustRegister(amalgamPath, http.MethodOptions, nil)
+	builder.MustRegister(amalgamPath, http.MethodGet, &api.Handler{
 		Middleware: nil,
 		Handler:    h.GetAmalgam,
 	})
-	builder.MustRegister("/api/chat", http.MethodOptions, &api.Handler{
-		Middleware: nil,
-		Handler:    func(w http.ResponseWriter, r *http.Request) {},
-	})
-	builder.MustRegister("/api/chat", http.MethodPost, &api.Handler{
+
+	const chatPath = "/api/chat"
+	builder.MustRegister(chatPath, http.MethodOptions, nil)
+	builder.MustRegister(chatPath, http.MethodPost, &api.Handler{
 		Middleware: nil,
 		Handler:    h.Chat,
 	})

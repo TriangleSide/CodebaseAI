@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Container } from 'react-bootstrap';
 import ApiClient, {AmalgamResponse} from "./APIClient";
+import Projects from "./projects/Projects";
 
 export interface AmalgamProps {}
 export interface AmalgamState {
@@ -93,9 +94,13 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
 
         return (
             <Container>
-                <br/>
-                <h1>Amalgam Data</h1>
-                {content}
+                <Projects>
+                    <div>
+                        <br/>
+                        <h1>Amalgam Data</h1>
+                        {content}
+                    </div>
+                </Projects>
             </Container>
         );
     }

@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/db/daos/projects"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
@@ -47,6 +48,11 @@ func (p *Project) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	project := &models.Project{
 		Path: createProjectRequest.Path,
+	}
+
+	if _, err := os.Stat(createProjectRequest.Path); os.IsNotExist(err) {
+		http.Error(w, "Provided path does not exist", http.StatusBadRequest)
+		return
 	}
 
 	if err := p.projectDAO.Create(project); err != nil {

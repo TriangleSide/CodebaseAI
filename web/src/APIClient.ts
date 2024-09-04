@@ -1,3 +1,7 @@
+import {Paths} from "./api/Paths";
+import {ContentTypes} from "./http/Headers";
+import {Methods} from "./http/Methods";
+
 export interface Message {
     role: 'user' | 'assistant';
     content: string;
@@ -20,10 +24,8 @@ export interface AmalgamResponse {
 export type TokenCallback = (token: string) => void;
 
 export default class ApiClient {
-    public static readonly API_BASE_URL = "http://127.0.0.1:8080/api";
-
     static async fetchAmalgam(): Promise<AmalgamResponse> {
-        const response = await fetch(`${ApiClient.API_BASE_URL}/amalgam`);
+        const response = await fetch(Paths.AMALGAM);
         if (response.ok) {
             return response.json();
         } else {
@@ -32,10 +34,10 @@ export default class ApiClient {
     }
 
     static async sendMessage(messages: Message[], tokenCallback: TokenCallback): Promise<void> {
-        const response = await fetch(`${ApiClient.API_BASE_URL}/chat`, {
-            method: 'POST',
+        const response = await fetch(Paths.CHAT, {
+            method: Methods.POST,
             headers: {
-                'Content-Type': 'application/json',
+                [ContentTypes.HEADER]: ContentTypes.JSON,
             },
             body: JSON.stringify({ messages } as ChatRequest),
         });

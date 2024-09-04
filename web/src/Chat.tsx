@@ -3,6 +3,7 @@ import { Container, Form, Button } from 'react-bootstrap';
 import ApiClient, { AmalgamResponse, Message } from "./APIClient";
 import ChatCard from "./ChatCard";
 import {AmalgamSummary} from "./Amalgam";
+import Projects from "./projects/Projects";
 
 export interface ChatProps {}
 export interface ChatState {
@@ -122,29 +123,31 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
 
         return (
             <Container>
-                <br/>
-                <h1>Codebase AI Chat</h1>
-                <p>This app adds the codebase amalgam to the beginning of the chat.</p>
-                <br/>
-                <div ref={this.chatContainerRef} className="chat-container">
-                    <ChatCard key={"amalgam"} role={"codebase"} content={amalgamMsg}/>
-                    {messages.map((msg, index) => (
-                        <ChatCard key={index} role={msg.role} content={msg.content}/>
-                    ))}
-                </div>
-                <Form.Group className="mb-3">
-                    <Form.Control
-                        className="text-white bg-dark"
-                        type="text"
-                        placeholder="Chat with AI about your codebase..."
-                        value={input}
-                        onChange={this.handleInputChange}
-                        onKeyUp={this.handleKeyPress}
-                    />
-                </Form.Group>
-                <Button onClick={this.handleSendMessage} variant="primary" disabled={loading || amalgamLoading}>
-                    {loading ? 'Sending...' : 'Send'}
-                </Button>
+                <Projects>
+                    <br/>
+                    <h1>Codebase AI Chat</h1>
+                    <p>This app adds the codebase amalgam to the beginning of the chat.</p>
+                    <br/>
+                    <div ref={this.chatContainerRef} className="chat-container">
+                        <ChatCard key={"amalgam"} role={"codebase"} content={amalgamMsg}/>
+                        {messages.map((msg, index) => (
+                            <ChatCard key={index} role={msg.role} content={msg.content}/>
+                        ))}
+                    </div>
+                    <Form.Group className="mb-3">
+                        <Form.Control
+                            className="text-white bg-dark"
+                            type="text"
+                            placeholder="Chat with AI about your codebase..."
+                            value={input}
+                            onChange={this.handleInputChange}
+                            onKeyUp={this.handleKeyPress}
+                        />
+                    </Form.Group>
+                    <Button onClick={this.handleSendMessage} variant="primary" disabled={loading || amalgamLoading}>
+                        {loading ? 'Sending...' : 'Send'}
+                    </Button>
+                </Projects>
             </Container>
         );
     }

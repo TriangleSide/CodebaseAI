@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navbar, Nav, Container } from 'react-bootstrap';
-import Amalgam from "./Amalgam";
+import AmalgamContainer from "./amalgam/AmalgamContainer";
+import ChatContainer from "./chat/ChatContainer";
 import Home from "./Home";
-import Chat from "./Chat";
 import './App.css';
 
 export interface AppProps {}
@@ -34,8 +34,8 @@ export default class App extends React.Component<AppProps, AppState> {
                 <Container>
                     <Routes>
                         <Route path="/" element={<Home />} />
-                        <Route path="/amalgam" element={<Amalgam />} />
-                        <Route path="/chat" element={<Chat />} />
+                        <Route path="/amalgam" element={<AmalgamContainer />} />
+                        <Route path="/chat" element={<ChatContainer />} />
                     </Routes>
                 </Container>
             </Router>

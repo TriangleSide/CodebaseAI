@@ -1,6 +1,6 @@
-import {Paths} from "./api/Paths";
-import {ContentTypes} from "./http/Headers";
-import {Methods} from "./http/Methods";
+import {Paths} from "../api/Paths";
+import {ContentTypes} from "../http/Headers";
+import {Methods} from "../http/Methods";
 
 export interface Message {
     role: 'user' | 'assistant';
@@ -16,23 +16,9 @@ export interface ApiStreamResponse {
     success: boolean | null;
 }
 
-export interface AmalgamResponse {
-    content: string;
-    tokenCount: number;
-}
-
 export type TokenCallback = (token: string) => void;
 
-export default class ApiClient {
-    static async fetchAmalgam(): Promise<AmalgamResponse> {
-        const response = await fetch(Paths.AMALGAM);
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error(`${response.status} ${response.statusText}`);
-        }
-    }
-
+export default class ChatAPIClient {
     static async sendMessage(messages: Message[], tokenCallback: TokenCallback): Promise<void> {
         const response = await fetch(Paths.CHAT, {
             method: Methods.POST,

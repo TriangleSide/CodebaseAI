@@ -1,9 +1,11 @@
 import React from 'react';
 import { Button, Container } from 'react-bootstrap';
-import ApiClient, {AmalgamResponse} from "./APIClient";
-import Projects from "./projects/Projects";
+import AmalgamAPIClient, {AmalgamResponse} from "./AmalgamAPIClient";
 
-export interface AmalgamProps {}
+export interface AmalgamProps {
+    projectId?: number;
+}
+
 export interface AmalgamState {
     amalgam: AmalgamResponse | null;
     loading: boolean;
@@ -16,7 +18,7 @@ export function AmalgamSummary(amalgam: AmalgamResponse | null): string {
 }
 
 export default class Amalgam extends React.Component<AmalgamProps, AmalgamState> {
-    constructor(props: {}) {
+    constructor(props: AmalgamProps) {
         super(props);
         this.state = {
             amalgam: null,
@@ -32,7 +34,7 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
 
     fetchAmalgamData = async () => {
         try {
-            const data = await ApiClient.fetchAmalgam();
+            const data = await AmalgamAPIClient.fetchAmalgam();
             this.setState({
                 amalgam: data,
                 loading: false
@@ -93,15 +95,16 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
         }
 
         return (
-            <Container>
-                <Projects>
+            <div>
+                <Container>
                     <div>
                         <br/>
                         <h1>Amalgam Data</h1>
                         {content}
                     </div>
-                </Projects>
-            </Container>
+                </Container>
+                <br/>
+            </div>
         );
     }
 }

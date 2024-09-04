@@ -20,3 +20,13 @@ body {
     overflow-x: auto;
     font-size: small;
 }
+
+.chat-text-input {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.clickable {
+    cursor: pointer;
+    user-select: none;
+}

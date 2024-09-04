@@ -1,9 +1,9 @@
 import React from 'react';
 import { Container, Form, Button } from 'react-bootstrap';
-import ApiClient, { AmalgamResponse, Message } from "./APIClient";
+import ChatAPIClient, { Message } from "./ChatAPIClient";
 import ChatCard from "./ChatCard";
-import {AmalgamSummary} from "./Amalgam";
-import Projects from "./projects/Projects";
+import {AmalgamSummary} from "../amalgam/Amalgam";
+import AmalgamAPIClient, {AmalgamResponse} from "../amalgam/AmalgamAPIClient";
 
 export interface ChatProps {}
 export interface ChatState {
@@ -37,7 +37,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
 
     fetchAmalgamData = async () => {
         try {
-            const data = await ApiClient.fetchAmalgam();
+            const data = await AmalgamAPIClient.fetchAmalgam();
             this.setState({ amalgamData: data, amalgamLoading: false });
         } catch (err) {
             console.error('Failed to fetch amalgam data:', err);
@@ -83,7 +83,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
 
             chatRequestMessages[0].content = this.state.amalgamData?.content + "// User request below.\n\n" + chatRequestMessages[0].content;
 
-            await ApiClient.sendMessage(chatRequestMessages, tokenCallback);
+            await ChatAPIClient.sendMessage(chatRequestMessages, tokenCallback);
             this.setState({ loading: false });
         } catch (error) {
             this.setState((prevState) => ({
@@ -122,32 +122,30 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
         }
 
         return (
-            <Container>
-                <Projects>
-                    <br/>
-                    <h1>Codebase AI Chat</h1>
-                    <p>This app adds the codebase amalgam to the beginning of the chat.</p>
-                    <br/>
-                    <div ref={this.chatContainerRef} className="chat-container">
-                        <ChatCard key={"amalgam"} role={"codebase"} content={amalgamMsg}/>
-                        {messages.map((msg, index) => (
-                            <ChatCard key={index} role={msg.role} content={msg.content}/>
-                        ))}
-                    </div>
-                    <Form.Group className="mb-3">
-                        <Form.Control
-                            className="text-white bg-dark"
-                            type="text"
-                            placeholder="Chat with AI about your codebase..."
-                            value={input}
-                            onChange={this.handleInputChange}
-                            onKeyUp={this.handleKeyPress}
-                        />
-                    </Form.Group>
-                    <Button onClick={this.handleSendMessage} variant="primary" disabled={loading || amalgamLoading}>
-                        {loading ? 'Sending...' : 'Send'}
-                    </Button>
-                </Projects>
+        <Container>
+                <br/>
+                <h1>Codebase AI Chat</h1>
+                <p>This app adds the codebase amalgam to the beginning of the chat.</p>
+                <br/>
+                <div ref={this.chatContainerRef} className="chat-container">
+                    <ChatCard key={"amalgam"} role={"codebase"} content={amalgamMsg}/>
+                    {messages.map((msg, index) => (
+                        <ChatCard key={index} role={msg.role} content={msg.content}/>
+                    ))}
+                </div>
+                <Form.Group className="mb-3">
+                    <Form.Control
+                        className="chat-text-input text-white bg-dark"
+                        type="text"
+                        placeholder="Chat with AI about your codebase..."
+                        value={input}
+                        onChange={this.handleInputChange}
+                        onKeyUp={this.handleKeyPress}
+                    />
+                </Form.Group>
+                <Button onClick={this.handleSendMessage} variant="primary" disabled={loading || amalgamLoading}>
+                    {loading ? 'Sending...' : 'Send'}
+                </Button>
             </Container>
         );
     }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -20,11 +21,14 @@ import (
 func main() {
 	logger.MustConfigure()
 	logrus.Info("Starting the server.")
+	logrus.Infof("Using the log level %s.", strings.ToUpper(logrus.GetLevel().String()))
 
 	cfg, err := envprocessor.ProcessAndValidate[config.Config]()
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to process configuration")
 	}
+	logrus.Infof("Using project root '%s'.", cfg.ProjectRoot)
+	logrus.Infof("Using model version '%s'.", cfg.ModelVersion)
 
 	httpCommonMiddleware := []basemiddleware.Middleware{
 		middleware.Cors,

@@ -6,6 +6,7 @@ toolchain go1.23.0
 
 require (
 	github.com/TriangleSide/GoBase v0.0.0-20240904003914-fec5dd89f8aa
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/sashabaranov/go-openai v1.29.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/tiktoken-go/tokenizer v0.1.1

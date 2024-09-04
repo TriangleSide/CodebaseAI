@@ -1,60 +1,36 @@
-package handler
+package handlers
 
 import (
 	"encoding/json"
-	"github.com/TriangleSide/GoBase/pkg/http/parameters"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
-	"github.com/TriangleSide/CodebaseAI/pkg/amalgam"
-	"github.com/TriangleSide/CodebaseAI/pkg/config"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
 	"github.com/TriangleSide/GoBase/pkg/http/api"
+	"github.com/TriangleSide/GoBase/pkg/http/headers"
+	"github.com/TriangleSide/GoBase/pkg/http/parameters"
 )
 
-type Handler struct {
-	cfg    *config.Config
+type Chat struct {
 	aiChat ai.Chat
 }
 
-func New(cfg *config.Config, aiChat ai.Chat) *Handler {
-	return &Handler{
-		cfg:    cfg,
+func NewChat(aiChat ai.Chat) *Chat {
+	return &Chat{
 		aiChat: aiChat,
 	}
 }
 
-func (h *Handler) GetAmalgam(w http.ResponseWriter, r *http.Request) {
-	amalgamContent, tokenCount, err := amalgam.Get(h.cfg.ProjectRoot)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	amalgamResponse := models.AmalgamResponse{
-		Content:    amalgamContent,
-		TokenCount: tokenCount,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(amalgamResponse); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
-func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
+func (c *Chat) Stream(w http.ResponseWriter, r *http.Request) {
 	chatRequest, err := parameters.Decode[models.ChatRequest](r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json-seq")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set(headers.ContentType, "application/json-seq")
 	w.WriteHeader(http.StatusOK)
 
 	flusher, writerIsFlusher := w.(http.Flusher)
@@ -63,7 +39,7 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 	}
 	defer flusher.Flush()
 
-	tokenStream, errorStream := h.aiChat.Stream(r.Context(), chatRequest.Messages)
+	tokenStream, errorStream := c.aiChat.Stream(r.Context(), chatRequest.Messages)
 	encoder := json.NewEncoder(w)
 	success := true
 
@@ -97,18 +73,11 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) AcceptHTTPAPIBuilder(builder *api.HTTPAPIBuilder) {
-	const amalgamPath = "/api/amalgam"
-	builder.MustRegister(amalgamPath, http.MethodOptions, nil)
-	builder.MustRegister(amalgamPath, http.MethodGet, &api.Handler{
-		Middleware: nil,
-		Handler:    h.GetAmalgam,
-	})
-
+func (c *Chat) AcceptHTTPAPIBuilder(builder *api.HTTPAPIBuilder) {
 	const chatPath = "/api/chat"
 	builder.MustRegister(chatPath, http.MethodOptions, nil)
 	builder.MustRegister(chatPath, http.MethodPost, &api.Handler{
 		Middleware: nil,
-		Handler:    h.Chat,
+		Handler:    c.Stream,
 	})
 }

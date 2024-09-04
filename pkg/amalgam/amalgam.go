@@ -38,6 +38,7 @@ func init() {
 		".tsx":      {},
 		".html":     {},
 		".css":      {},
+		".sql":      {},
 	}
 	disallowedPaths = map[string]struct{}{
 		"bin":          {},

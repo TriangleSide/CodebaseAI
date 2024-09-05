@@ -57,6 +57,11 @@ func (p *dao) Get(project *models.Project) error {
 	if err != nil {
 		return fmt.Errorf("error executing SQL statement (%s)", err.Error())
 	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logrus.WithError(err).Error("Failed to close rows.")
+		}
+	}()
 
 	if rows.Next() {
 		if err := rows.Scan(&project.Id, &project.Path); err != nil {

@@ -14,7 +14,7 @@ interface ProjectsProps {
 interface ProjectsState {
     projects: Project[];
     loading: boolean;
-    error: string;
+    error: string | null;
     showModal: boolean;
     selectedProjectId?: number;
 }
@@ -37,30 +37,49 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
 
     fetchProjects = async () => {
         try {
+            this.setState({
+                loading: true,
+                projects: [],
+                error: null,
+                selectedProjectId: undefined,
+            })
             const response = await ProjectAPIClient.list();
             const projects = response.projects;
             this.setState({
                 projects: projects,
                 loading: false,
-                error: '',
+                error: null,
                 selectedProjectId: projects.length > 0 ? projects[0].id : undefined
             });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-            this.setState({ error: errorMessage, loading: false });
+            this.setState({
+                error: errorMessage,
+                projects: [],
+                loading: false,
+                selectedProjectId: undefined,
+            });
         }
     };
 
     handleAddProject = async (projectPath: string) => {
         try {
-            const project = await ProjectAPIClient.create(projectPath);
-            this.setState(prevState => ({
-                projects: [...prevState.projects, project],
-                selectedProjectId: prevState.selectedProjectId ? prevState.selectedProjectId : project.id,
-            }));
+            this.setState({
+                loading: true,
+                projects: [],
+                error: null,
+                selectedProjectId: undefined,
+            })
+            await ProjectAPIClient.create(projectPath);
+            await this.fetchProjects()
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An error occurred while adding the project';
-            this.setState({ error: errorMessage });
+            this.setState({
+                error: errorMessage,
+                projects: [],
+                loading: false,
+                selectedProjectId: undefined,
+            });
         }
     };
 
@@ -70,14 +89,22 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
 
     handleDelete = async (id: number) => {
         try {
+            this.setState({
+                loading: true,
+                projects: [],
+                error: null,
+                selectedProjectId: undefined,
+            })
             await ProjectAPIClient.delete(id);
-            this.setState(prevState => ({
-                projects: prevState.projects.filter(project => project.id !== id),
-                selectedProjectId: prevState.selectedProjectId === id ? undefined : prevState.selectedProjectId
-            }));
+            await this.fetchProjects()
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to delete the project';
-            this.setState({ error: errorMessage });
+            this.setState({
+                error: errorMessage,
+                projects: [],
+                loading: false,
+                selectedProjectId: undefined,
+            });
         }
     };
 
@@ -108,9 +135,11 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
                         <div className="text-danger">{error}</div>
                     ) : (
                         <div>
-                            <p>
-                                Select a project below.
-                            </p>
+                            {projects.length > 0 ? (
+                                <p>
+                                    Select a project below.
+                                </p>
+                            ) : null}
                             <ListGroup>
                                 {projects.map(project => (
                                     <ListGroup.Item

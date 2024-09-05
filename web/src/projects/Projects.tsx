@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Container, ListGroup } from 'react-bootstrap';
-import { APIClient, Project } from "./APIClient";
+import { ProjectAPIClient, Project } from "./ProjectAPIClient";
 import AddProjectModal from './AddProjectModal';
 
 interface ChildProps {
@@ -37,7 +37,7 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
 
     fetchProjects = async () => {
         try {
-            const response = await APIClient.list();
+            const response = await ProjectAPIClient.list();
             const projects = response.projects;
             this.setState({
                 projects: projects,
@@ -53,7 +53,7 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
 
     handleAddProject = async (projectPath: string) => {
         try {
-            const project = await APIClient.create(projectPath);
+            const project = await ProjectAPIClient.create(projectPath);
             this.setState(prevState => ({
                 projects: [...prevState.projects, project],
                 selectedProjectId: prevState.selectedProjectId ? prevState.selectedProjectId : project.id,
@@ -70,7 +70,7 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
 
     handleDelete = async (id: number) => {
         try {
-            await APIClient.delete(id);
+            await ProjectAPIClient.delete(id);
             this.setState(prevState => ({
                 projects: prevState.projects.filter(project => project.id !== id),
                 selectedProjectId: prevState.selectedProjectId === id ? undefined : prevState.selectedProjectId
@@ -82,7 +82,9 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
     };
 
     handleSelect = (id: number) => {
-        this.setState({ selectedProjectId: id });
+        this.setState({
+            selectedProjectId: id
+        });
     };
 
     render() {

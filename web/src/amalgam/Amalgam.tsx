@@ -32,9 +32,27 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
         this.fetchAmalgamData();
     }
 
+    componentDidUpdate(prevProps: AmalgamProps) {
+        if (this.props.projectId !== prevProps.projectId) {
+            this.fetchAmalgamData();
+        }
+    }
+
     fetchAmalgamData = async () => {
+        if (this.props.projectId == undefined) {
+            this.setState({
+                error: 'A project is not selected',
+                loading: false,
+            });
+            return
+        }
+        this.setState({
+            amalgam: null,
+            loading: true,
+            error: null,
+        });
         try {
-            const data = await AmalgamAPIClient.fetchAmalgam();
+            const data = await AmalgamAPIClient.fetchAmalgam(this.props.projectId);
             this.setState({
                 amalgam: data,
                 loading: false

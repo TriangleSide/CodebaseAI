@@ -2,28 +2,50 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/TriangleSide/CodebaseAI/pkg/db/daos/projects"
+	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
+	"github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/amalgam"
-	"github.com/TriangleSide/CodebaseAI/pkg/config"
+	"github.com/TriangleSide/CodebaseAI/pkg/api"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
-	"github.com/TriangleSide/GoBase/pkg/http/api"
+	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
 	"github.com/TriangleSide/GoBase/pkg/http/headers"
+	"github.com/TriangleSide/GoBase/pkg/http/parameters"
 )
 
 type Amalgam struct {
-	cfg *config.Config
+	projectDAO projects.DAO
 }
 
-func NewAmalgam(cfg *config.Config) *Amalgam {
+func NewAmalgam(projectDAO projects.DAO) *Amalgam {
 	return &Amalgam{
-		cfg: cfg,
+		projectDAO: projectDAO,
 	}
 }
 
 func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
-	amalgamContent, tokenCount, err := amalgam.Get(a.cfg.ProjectRoot)
+	amalgamRequest, err := parameters.Decode[models.AmalgamRequest](r)
 	if err != nil {
+		logrus.WithError(err).Error("Failed to decode request.")
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	project := &models.Project{
+		Id: ptr.Of(amalgamRequest.ProjectId),
+	}
+	err = a.projectDAO.Get(project)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to get the project.")
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	amalgamContent, tokenCount, err := amalgam.Get(*project.Path)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to generate the amalgam.")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -36,15 +58,15 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(headers.ContentType, headers.ContentTypeApplicationJson)
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(amalgamResponse); err != nil {
+		logrus.WithError(err).Error("Failed to encode the response.")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func (a *Amalgam) AcceptHTTPAPIBuilder(builder *api.HTTPAPIBuilder) {
-	const amalgamPath = "/api/amalgam"
-	builder.MustRegister(amalgamPath, http.MethodOptions, nil)
-	builder.MustRegister(amalgamPath, http.MethodGet, &api.Handler{
+func (a *Amalgam) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {
+	builder.MustRegister(api.PATH_AMALGAM, http.MethodOptions, nil)
+	builder.MustRegister(api.PATH_AMALGAM, http.MethodGet, &baseapi.Handler{
 		Middleware: nil,
 		Handler:    a.Get,
 	})

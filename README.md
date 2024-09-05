@@ -26,7 +26,6 @@ Export the following environment variables to run the project:
 
 ```shell
 export API_KEY=your_openai_api_key
-export PROJECT_ROOT=path_to_project_root
 ```
 
 Run the API using go in terminal:

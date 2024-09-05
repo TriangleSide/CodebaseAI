@@ -6,8 +6,8 @@ export interface AmalgamResponse {
 }
 
 export default class AmalgamAPIClient {
-    static async fetchAmalgam(): Promise<AmalgamResponse> {
-        const response = await fetch(Paths.AMALGAM);
+    static async fetchAmalgam(projectId: number): Promise<AmalgamResponse> {
+        const response = await fetch(Paths.amalgam(projectId));
         if (response.ok) {
             return response.json();
         } else {

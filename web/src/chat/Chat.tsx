@@ -5,9 +5,12 @@ import ChatCard from "./ChatCard";
 import {AmalgamSummary} from "../amalgam/Amalgam";
 import AmalgamAPIClient, {AmalgamResponse} from "../amalgam/AmalgamAPIClient";
 
-export interface ChatProps {}
+export interface ChatProps {
+    projectId?: number;
+}
+
 export interface ChatState {
-    error: string | null;
+    amalgamError: string | null;
     amalgamLoading: boolean;
     amalgamData: AmalgamResponse | null;
     messages: Message[];
@@ -21,7 +24,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
     constructor(props: ChatProps) {
         super(props);
         this.state = {
-            error: null,
+            amalgamError: null,
             amalgamLoading: true,
             amalgamData: null,
             messages: [],
@@ -35,13 +38,43 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
         this.fetchAmalgamData();
     }
 
+    componentDidUpdate(prevProps: ChatProps) {
+        if (this.props.projectId !== prevProps.projectId) {
+            this.fetchAmalgamData();
+        }
+        if (this.chatContainerRef.current) {
+            this.chatContainerRef.current.scrollTop = this.chatContainerRef.current.scrollHeight;
+        }
+    }
+
     fetchAmalgamData = async () => {
+        if (this.props.projectId == undefined) {
+            this.setState({
+                amalgamError: 'A project is not selected',
+                amalgamData: null,
+                amalgamLoading: false,
+            });
+            return
+        }
+        this.setState({
+            amalgamError: null,
+            amalgamData: null,
+            amalgamLoading: true,
+        });
         try {
-            const data = await AmalgamAPIClient.fetchAmalgam();
-            this.setState({ amalgamData: data, amalgamLoading: false });
+            const data = await AmalgamAPIClient.fetchAmalgam(this.props.projectId);
+            this.setState({
+                amalgamError: null,
+                amalgamData: data,
+                amalgamLoading: false,
+            });
         } catch (err) {
             console.error('Failed to fetch amalgam data:', err);
-            this.setState({ amalgamData: null, amalgamLoading: false });
+            this.setState({
+                amalgamError: 'Error fetching amalgam data',
+                amalgamData: null,
+                amalgamLoading: false,
+            });
         }
     };
 
@@ -103,14 +136,16 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
         }
     };
 
-    componentDidUpdate() {
-        if (this.chatContainerRef.current) {
-            this.chatContainerRef.current.scrollTop = this.chatContainerRef.current.scrollHeight;
-        }
-    }
-
     render() {
-        const { messages, input, loading, amalgamLoading, amalgamData } = this.state;
+        const { messages, input, loading, amalgamError, amalgamLoading, amalgamData } = this.state;
+
+        if (amalgamError) {
+            return (
+                <Container>
+                    Error fetching amalgam data: {amalgamError}
+                </Container>
+            )
+        }
 
         let amalgamMsg: string;
         if (amalgamLoading) {
@@ -122,7 +157,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
         }
 
         return (
-        <Container>
+            <Container>
                 <br/>
                 <h1>Codebase AI Chat</h1>
                 <p>This app adds the codebase amalgam to the beginning of the chat.</p>

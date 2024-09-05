@@ -11,7 +11,7 @@ export interface ListProjectsResponse {
     projects: Project[];
 }
 
-export class APIClient {
+export class ProjectAPIClient {
     static async list(): Promise<ListProjectsResponse> {
         const response = await fetch(Paths.PROJECTS);
         if (response.ok) {

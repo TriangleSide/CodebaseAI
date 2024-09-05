@@ -1,0 +1,1 @@
+SELECT id, path FROM projects WHERE id = ? OR path = ?;

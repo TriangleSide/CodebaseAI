@@ -37,7 +37,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to process configuration.")
 	}
-	logrus.Infof("Using project root '%s'.", cfg.ProjectRoot)
 	logrus.Infof("Using model version '%s'.", cfg.ModelVersion)
 
 	logrus.Info("Connecting to the database.")
@@ -64,7 +63,7 @@ func main() {
 
 	logrus.Info("Configuring the API handlers.")
 	httpEndpointHandlers := []api.HTTPEndpointHandler{
-		handlers.NewAmalgam(cfg),
+		handlers.NewAmalgam(projectDAO),
 		handlers.NewChat(aiChat),
 		handlers.NewProject(projectDAO),
 	}

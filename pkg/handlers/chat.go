@@ -7,8 +7,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
+	"github.com/TriangleSide/CodebaseAI/pkg/api"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
-	"github.com/TriangleSide/GoBase/pkg/http/api"
+	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
 	"github.com/TriangleSide/GoBase/pkg/http/headers"
 	"github.com/TriangleSide/GoBase/pkg/http/parameters"
 )
@@ -26,6 +27,7 @@ func NewChat(aiChat ai.Chat) *Chat {
 func (c *Chat) Stream(w http.ResponseWriter, r *http.Request) {
 	chatRequest, err := parameters.Decode[models.ChatRequest](r)
 	if err != nil {
+		logrus.WithError(err).Error("Failed to decode the request.")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -73,10 +75,9 @@ func (c *Chat) Stream(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Chat) AcceptHTTPAPIBuilder(builder *api.HTTPAPIBuilder) {
-	const chatPath = "/api/chat"
-	builder.MustRegister(chatPath, http.MethodOptions, nil)
-	builder.MustRegister(chatPath, http.MethodPost, &api.Handler{
+func (c *Chat) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {
+	builder.MustRegister(api.PATH_CHAT, http.MethodOptions, nil)
+	builder.MustRegister(api.PATH_CHAT, http.MethodPost, &baseapi.Handler{
 		Middleware: nil,
 		Handler:    c.Stream,
 	})

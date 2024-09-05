@@ -12,6 +12,9 @@ import (
 )
 
 var (
+	//go:embed get.sql
+	getSql string
+
 	//go:embed list.sql
 	listSql string
 
@@ -23,6 +26,7 @@ var (
 )
 
 type DAO interface {
+	Get(*models.Project) error
 	List() ([]*models.Project, error)
 	Create(project *models.Project) error
 	Delete(project *models.Project) (bool, error)
@@ -36,6 +40,32 @@ func NewDAO(db *sql.DB) DAO {
 	return &dao{
 		db: db,
 	}
+}
+
+func (p *dao) Get(project *models.Project) error {
+	statement, err := p.db.Prepare(getSql)
+	if err != nil {
+		return fmt.Errorf("error preparing SQL statement (%s)", err.Error())
+	}
+	defer func() {
+		if err := statement.Close(); err != nil {
+			logrus.WithError(err).Error("Failed to close statement.")
+		}
+	}()
+
+	rows, err := statement.Query(project.Id, project.Path)
+	if err != nil {
+		return fmt.Errorf("error executing SQL statement (%s)", err.Error())
+	}
+
+	if rows.Next() {
+		if err := rows.Scan(&project.Id, &project.Path); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return fmt.Errorf("project not found")
 }
 
 func (p *dao) List() ([]*models.Project, error) {

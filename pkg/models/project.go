@@ -1,8 +1,8 @@
 package models
 
 type Project struct {
-	Id   *int   `json:"id"`
-	Path string `json:"path"`
+	Id   *int    `json:"id"`
+	Path *string `json:"path"`
 }
 
 type CreateProjectRequest struct {
@@ -10,7 +10,7 @@ type CreateProjectRequest struct {
 }
 
 type DeleteProjectRequest struct {
-	Id *int `urlPath:"id" json:"-" validate:"required"`
+	Id *int `urlPath:"projectId" json:"-" validate:"required"`
 }
 
 type ListProjectsResponse struct {

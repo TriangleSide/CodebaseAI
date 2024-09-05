@@ -1,10 +1,11 @@
 import React from 'react';
 import { Card } from 'react-bootstrap';
 import ReactMarkdown from 'react-markdown';
+import {Roles, role} from "./Roles";
 
 export interface ChatCardState {}
 export interface ChatCardProps {
-    role: 'user' | 'assistant' | 'codebase';
+    role: role;
     content: string;
 }
 
@@ -18,11 +19,11 @@ export default class ChatCard extends React.Component<ChatCardProps, ChatCardSta
         const { role, content } = this.props;
 
         let user: string;
-        if (role === 'user') {
+        if (role == Roles.USER) {
             user = "User"
-        } else if (role === 'assistant') {
+        } else if (role == Roles.ASSISTANT) {
             user = "AI"
-        } else if (role === 'codebase') {
+        } else if (role == Roles.CODEBASE) {
             user = "Codebase"
         } else {
             throw new Error("Unknown role.")

@@ -4,6 +4,7 @@ import ChatAPIClient, { Message } from "./ChatAPIClient";
 import ChatCard from "./ChatCard";
 import {AmalgamSummary} from "../amalgam/Amalgam";
 import AmalgamAPIClient, {AmalgamResponse} from "../amalgam/AmalgamAPIClient";
+import {Roles} from "./Roles";
 
 export interface ChatProps {
     projectId?: number;
@@ -23,15 +24,19 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
 
     constructor(props: ChatProps) {
         super(props);
-        this.state = {
+        this.state = this.emptyState();
+        this.chatContainerRef = React.createRef();
+    }
+
+    emptyState(): ChatState {
+        return {
             amalgamError: null,
             amalgamLoading: true,
             amalgamData: null,
             messages: [],
             input: '',
             loading: false,
-        };
-        this.chatContainerRef = React.createRef();
+        }
     }
 
     componentDidMount() {
@@ -40,6 +45,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
 
     componentDidUpdate(prevProps: ChatProps) {
         if (this.props.projectId !== prevProps.projectId) {
+            this.setState(this.emptyState());
             this.fetchAmalgamData();
         }
         if (this.chatContainerRef.current) {
@@ -81,47 +87,47 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
     handleSendMessage = async () => {
         if (this.state.input.trim() === '') return;
 
-        const newMessage: Message = { role: 'user', content: this.state.input.trim() };
-        this.setState((prevState) => ({
-            messages: [...prevState.messages, newMessage],
+        let messages: Message[] = this.state.messages
+        messages = [...messages, { role: Roles.USER, content: this.state.input.trim() }]
+        messages = [...messages, { role: Roles.ASSISTANT, content: "" }]
+
+        this.setState({
+            messages: messages,
             input: '',
             loading: true,
-        }));
+        });
 
         const tokenCallback = (token: string) => {
-            this.setState((prevState) => {
-                const updatedMessages = [...prevState.messages];
-                const lastMessage = updatedMessages[updatedMessages.length - 1];
+            this.setState((prevState: ChatState) => {
+                const updatedMessages: Message[] = [...prevState.messages];
+                const lastMessage: Message = updatedMessages[updatedMessages.length - 1];
 
-                if (lastMessage && lastMessage.role === 'assistant') {
+                if (lastMessage.role === Roles.ASSISTANT) {
                     lastMessage.content += token;
                 } else {
-                    updatedMessages.push({ role: 'assistant', content: token });
+                    updatedMessages.push({role: Roles.ASSISTANT, content: token,});
                 }
 
-                return { messages: updatedMessages };
+                return {
+                    messages: updatedMessages,
+                };
             });
         };
 
         try {
-            const chatRequestMessages = this.state.messages.map(msg => ({
+            const apiRequestMessages: Message[] = messages.map(msg => ({
                 role: msg.role,
                 content: msg.content
             } as Message));
 
-            chatRequestMessages.push({
-                role: 'user',
-                content: newMessage.content,
-            } as Message);
+            apiRequestMessages[0].content = this.state.amalgamData?.content + "// User request below.\n\n" + apiRequestMessages[0].content;
 
-            chatRequestMessages[0].content = this.state.amalgamData?.content + "// User request below.\n\n" + chatRequestMessages[0].content;
-
-            await ChatAPIClient.sendMessage(chatRequestMessages, tokenCallback);
+            await ChatAPIClient.sendMessage(apiRequestMessages, tokenCallback);
             this.setState({ loading: false });
         } catch (error) {
             this.setState((prevState) => ({
                 loading: false,
-                messages: [...prevState.messages, { role: 'assistant', content: 'Error: ' + error }],
+                messages: [...prevState.messages, { role: Roles.ASSISTANT, content: 'Error: ' + error }],
             }));
         }
     };
@@ -163,7 +169,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
                 <p>This app adds the codebase amalgam to the beginning of the chat.</p>
                 <br/>
                 <div ref={this.chatContainerRef} className="chat-container">
-                    <ChatCard key={"amalgam"} role={"codebase"} content={amalgamMsg}/>
+                    <ChatCard key={"amalgam"} role={Roles.CODEBASE} content={amalgamMsg}/>
                     {messages.map((msg, index) => (
                         <ChatCard key={index} role={msg.role} content={msg.content}/>
                     ))}

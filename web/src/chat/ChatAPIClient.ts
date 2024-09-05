@@ -1,9 +1,10 @@
 import {Paths} from "../api/Paths";
 import {ContentTypes} from "../http/Headers";
 import {Methods} from "../http/Methods";
+import {role} from "./Roles";
 
 export interface Message {
-    role: 'user' | 'assistant';
+    role: role;
     content: string;
 }
 

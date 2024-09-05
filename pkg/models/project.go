@@ -13,6 +13,8 @@ type DeleteProjectRequest struct {
 	Id *int `urlPath:"projectId" json:"-" validate:"required"`
 }
 
+type ListProjectsRequest struct {}
+
 type ListProjectsResponse struct {
 	Projects []*Project `json:"projects"`
 }

@@ -1,18 +1,15 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"os"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/api"
 	"github.com/TriangleSide/CodebaseAI/pkg/db/daos/projects"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
 	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
-	"github.com/TriangleSide/GoBase/pkg/http/headers"
-	"github.com/TriangleSide/GoBase/pkg/http/parameters"
+	"github.com/TriangleSide/GoBase/pkg/http/errors"
+	"github.com/TriangleSide/GoBase/pkg/http/responders"
 )
 
 type Project struct {
@@ -26,79 +23,46 @@ func NewProject(projectDAO projects.DAO) *Project {
 }
 
 func (p *Project) List(w http.ResponseWriter, r *http.Request) {
-	projectList, err := p.projectDAO.List()
-	if err != nil {
-		logrus.WithError(err).Error("Failed to list the projects.")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	listProjectResponse := &models.ListProjectsResponse{
-		Projects: projectList,
-	}
-
-	w.Header().Set(headers.ContentType, headers.ContentTypeApplicationJson)
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(listProjectResponse); err != nil {
-		logrus.WithError(err).Error("Failed to encode the response.")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	responders.JSON(w, r, func(*models.ListProjectsRequest) (*models.ListProjectsResponse, int, error) {
+		projectList, err := p.projectDAO.List()
+		if err != nil {
+			return nil, 0, err
+		}
+		return &models.ListProjectsResponse{
+			Projects: projectList,
+		}, http.StatusOK, nil
+	})
 }
 
 func (p *Project) Create(w http.ResponseWriter, r *http.Request) {
-	createProjectRequest, err := parameters.Decode[models.CreateProjectRequest](r)
-	if err != nil {
-		logrus.WithError(err).Error("Failed to decode the parameters.")
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	project := &models.Project{
-		Path: &createProjectRequest.Path,
-	}
-
-	if _, err := os.Stat(createProjectRequest.Path); os.IsNotExist(err) {
-		logrus.WithError(err).Error("Failed to find the project on the local machine.")
-		http.Error(w, "Provided path does not exist", http.StatusBadRequest)
-		return
-	}
-
-	if err := p.projectDAO.Create(project); err != nil {
-		logrus.WithError(err).Error("Failed to create the project.")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set(headers.ContentType, headers.ContentTypeApplicationJson)
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(project); err != nil {
-		logrus.WithError(err).Error("Failed to encode the response.")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	responders.JSON(w, r, func(requestParameters *models.CreateProjectRequest) (*models.Project, int, error) {
+		if _, err := os.Stat(requestParameters.Path); os.IsNotExist(err) {
+			return nil, 0, &errors.BadRequest{Err: err}
+		}
+		project := &models.Project{
+			Path: &requestParameters.Path,
+		}
+		if err := p.projectDAO.Create(project); err != nil {
+			return nil, 0, err
+		}
+		return project, http.StatusAccepted, nil
+	})
 }
 
 func (p *Project) Delete(w http.ResponseWriter, r *http.Request) {
-	deleteProjectRequest, err := parameters.Decode[models.DeleteProjectRequest](r)
-	if err != nil {
-		logrus.WithError(err).Error("Failed to decode the parameters.")
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	deleted, err := p.projectDAO.Delete(&models.Project{
-		Id: deleteProjectRequest.Id,
+	responders.Status(w, r, func(requestParameters *models.DeleteProjectRequest) (int, error) {
+		deleted, err := p.projectDAO.Delete(&models.Project{
+			Id: requestParameters.Id,
+		})
+		if err != nil {
+			return 0, err
+		}
+		if deleted {
+			return http.StatusOK, nil
+		} else {
+			return http.StatusNoContent, nil
+		}
 	})
-	if err != nil {
-		logrus.WithError(err).Error("Failed to delete the project.")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if deleted {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusNoContent)
-	}
 }
 
 func (p *Project) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {

@@ -1,18 +1,15 @@
 package handlers
 
 import (
-	"encoding/json"
-	"github.com/TriangleSide/CodebaseAI/pkg/db/daos/projects"
-	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
-	"github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/amalgam"
 	"github.com/TriangleSide/CodebaseAI/pkg/api"
+	"github.com/TriangleSide/CodebaseAI/pkg/db/daos/projects"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
 	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
-	"github.com/TriangleSide/GoBase/pkg/http/headers"
-	"github.com/TriangleSide/GoBase/pkg/http/parameters"
+	"github.com/TriangleSide/GoBase/pkg/http/responders"
+	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
 )
 
 type Amalgam struct {
@@ -26,42 +23,25 @@ func NewAmalgam(projectDAO projects.DAO) *Amalgam {
 }
 
 func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
-	amalgamRequest, err := parameters.Decode[models.AmalgamRequest](r)
-	if err != nil {
-		logrus.WithError(err).Error("Failed to decode request.")
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	responders.JSON(w, r, func(requestParameters *models.AmalgamRequest) (*models.AmalgamResponse, int, error) {
+		project := &models.Project{
+			Id: ptr.Of(requestParameters.ProjectId),
+		}
+		err := a.projectDAO.Get(project)
+		if err != nil {
+			return nil, 0, err
+		}
 
-	project := &models.Project{
-		Id: ptr.Of(amalgamRequest.ProjectId),
-	}
-	err = a.projectDAO.Get(project)
-	if err != nil {
-		logrus.WithError(err).Error("Failed to get the project.")
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+		amalgamContent, tokenCount, err := amalgam.Get(*project.Path)
+		if err != nil {
+			return nil, 0, err
+		}
 
-	amalgamContent, tokenCount, err := amalgam.Get(*project.Path)
-	if err != nil {
-		logrus.WithError(err).Error("Failed to generate the amalgam.")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	amalgamResponse := models.AmalgamResponse{
-		Content:    amalgamContent,
-		TokenCount: tokenCount,
-	}
-
-	w.Header().Set(headers.ContentType, headers.ContentTypeApplicationJson)
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(amalgamResponse); err != nil {
-		logrus.WithError(err).Error("Failed to encode the response.")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		return &models.AmalgamResponse{
+			Content:    amalgamContent,
+			TokenCount: tokenCount,
+		}, http.StatusOK, nil
+	})
 }
 
 func (a *Amalgam) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {

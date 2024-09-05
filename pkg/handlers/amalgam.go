@@ -65,8 +65,8 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Amalgam) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {
-	builder.MustRegister(api.PATH_AMALGAM, http.MethodOptions, nil)
-	builder.MustRegister(api.PATH_AMALGAM, http.MethodGet, &baseapi.Handler{
+	builder.MustRegister(api.PathAmalgam, http.MethodOptions, nil)
+	builder.MustRegister(api.PathAmalgam, http.MethodGet, &baseapi.Handler{
 		Middleware: nil,
 		Handler:    a.Get,
 	})

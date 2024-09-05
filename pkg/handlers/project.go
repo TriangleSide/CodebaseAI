@@ -102,18 +102,18 @@ func (p *Project) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Project) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {
-	builder.MustRegister(api.PATH_PROJECTS, http.MethodOptions, nil)
-	builder.MustRegister(api.PATH_PROJECTS, http.MethodGet, &baseapi.Handler{
+	builder.MustRegister(api.PathProjects, http.MethodOptions, nil)
+	builder.MustRegister(api.PathProjects, http.MethodGet, &baseapi.Handler{
 		Middleware: nil,
 		Handler:    p.List,
 	})
-	builder.MustRegister(api.PATH_PROJECTS, http.MethodPost, &baseapi.Handler{
+	builder.MustRegister(api.PathProjects, http.MethodPost, &baseapi.Handler{
 		Middleware: nil,
 		Handler:    p.Create,
 	})
 
-	builder.MustRegister(api.PATH_PROJECT_ID, http.MethodOptions, nil)
-	builder.MustRegister(api.PATH_PROJECT_ID, http.MethodDelete, &baseapi.Handler{
+	builder.MustRegister(api.PathProjectId, http.MethodOptions, nil)
+	builder.MustRegister(api.PathProjectId, http.MethodDelete, &baseapi.Handler{
 		Middleware: nil,
 		Handler:    p.Delete,
 	})

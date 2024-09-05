@@ -29,7 +29,7 @@ export default class ChatCard extends React.Component<ChatCardProps, ChatCardSta
         }
 
         return (
-            <Card className={`mb-2 text-white bg-dark`}>
+            <Card className={`mb-2 text-white bg-dark card-${role}`}>
                 <Card.Body>
                     <ReactMarkdown>{`**${user}:**\n\n${content}`}</ReactMarkdown>
                 </Card.Body>

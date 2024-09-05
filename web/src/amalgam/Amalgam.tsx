@@ -117,7 +117,7 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
                 <Container>
                     <div>
                         <br/>
-                        <h1>Amalgam Data</h1>
+                        <h2>Amalgam Data</h2>
                         {content}
                     </div>
                 </Container>

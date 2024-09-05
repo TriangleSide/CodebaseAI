@@ -22,10 +22,23 @@ body {
 }
 
 .chat-text-input {
+    width: 100%;
+    word-wrap: break-word;
     white-space: pre-wrap;
-    overflow-wrap: break-word;
 }
 
 .clickable {
     cursor: pointer;
+}
+
+.card-user {
+    border-color: #007bff; /* Blue for user */
+}
+
+.card-assistant {
+    border-color: #28a745; /* Green for AI */
+}
+
+.card-codebase {
+    border-color: #ffc107; /* Yellow for codebase */
 }

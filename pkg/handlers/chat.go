@@ -76,8 +76,8 @@ func (c *Chat) Stream(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Chat) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {
-	builder.MustRegister(api.PATH_CHAT, http.MethodOptions, nil)
-	builder.MustRegister(api.PATH_CHAT, http.MethodPost, &baseapi.Handler{
+	builder.MustRegister(api.PathChat, http.MethodOptions, nil)
+	builder.MustRegister(api.PathChat, http.MethodPost, &baseapi.Handler{
 		Middleware: nil,
 		Handler:    c.Stream,
 	})

@@ -159,7 +159,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
         return (
             <Container>
                 <br/>
-                <h1>Codebase AI Chat</h1>
+                <h2>Codebase AI Chat</h2>
                 <p>This app adds the codebase amalgam to the beginning of the chat.</p>
                 <br/>
                 <div ref={this.chatContainerRef} className="chat-container">
@@ -170,8 +170,8 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
                 </div>
                 <Form.Group className="mb-3">
                     <Form.Control
+                        as="textarea"
                         className="chat-text-input text-white bg-dark"
-                        type="text"
                         placeholder="Chat with AI about your codebase..."
                         value={input}
                         onChange={this.handleInputChange}

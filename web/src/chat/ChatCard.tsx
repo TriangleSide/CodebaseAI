@@ -19,11 +19,11 @@ export default class ChatCard extends React.Component<ChatCardProps, ChatCardSta
         const { role, content } = this.props;
 
         let user: string;
-        if (role == Roles.USER) {
+        if (role === Roles.USER) {
             user = "User"
-        } else if (role == Roles.ASSISTANT) {
+        } else if (role === Roles.ASSISTANT) {
             user = "AI"
-        } else if (role == Roles.CODEBASE) {
+        } else if (role === Roles.CODEBASE) {
             user = "Codebase"
         } else {
             throw new Error("Unknown role.")

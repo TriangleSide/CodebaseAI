@@ -11,5 +11,6 @@ type ChatRequest struct {
 
 type ChatResponse struct {
 	Content *string `json:"content,omitempty"`
-	Success *bool   `json:"success,omitempty"`
+	Done    *bool   `json:"done,omitempty"`
+	Error   *string `json:"error,omitempty"`
 }

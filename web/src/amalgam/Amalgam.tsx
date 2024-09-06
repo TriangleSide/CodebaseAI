@@ -39,7 +39,7 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
     }
 
     fetchAmalgamData = async () => {
-        if (this.props.projectId == undefined) {
+        if (this.props.projectId === undefined) {
             this.setState({
                 error: 'A project is not selected',
                 loading: false,

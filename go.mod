@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.23.0
 
 require (
-	github.com/TriangleSide/GoBase v0.0.0-20240905210637-2222a988e717
+	github.com/TriangleSide/GoBase v0.0.0-20240906174116-aa3fb43a73e2
 	github.com/mattn/go-sqlite3 v1.14.23
 	github.com/sashabaranov/go-openai v1.29.1
 	github.com/sirupsen/logrus v1.9.3

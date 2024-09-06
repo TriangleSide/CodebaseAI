@@ -6,10 +6,12 @@ import (
 	"io"
 
 	"github.com/sashabaranov/go-openai"
+	"github.com/sirupsen/logrus"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
+	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
 )
 
 //go:embed instructions.txt
@@ -28,16 +30,16 @@ func NewOpenAIChat(cfg *config.Config) ai.Chat {
 	}
 }
 
-func (model *openaiChat) Stream(ctx context.Context, messages []models.ChatMessage) (<-chan string, <-chan error) {
-	openaiMsgs := make([]openai.ChatCompletionMessage, 0)
+func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest, cancel <-chan struct{}) (tokens <-chan *models.ChatResponse, err error) {
+	openaiMessages := make([]openai.ChatCompletionMessage, 0)
 
-	openaiMsgs = append(openaiMsgs, openai.ChatCompletionMessage{
+	openaiMessages = append(openaiMessages, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleSystem,
 		Content: instructions,
 	})
 
-	for _, msg := range messages {
-		openaiMsgs = append(openaiMsgs, openai.ChatCompletionMessage{
+	for _, msg := range request.Messages {
+		openaiMessages = append(openaiMessages, openai.ChatCompletionMessage{
 			Role:    msg.Role,
 			Content: msg.Content,
 		})
@@ -45,36 +47,56 @@ func (model *openaiChat) Stream(ctx context.Context, messages []models.ChatMessa
 
 	req := openai.ChatCompletionRequest{
 		Model:    model.model,
-		Messages: openaiMsgs,
+		Messages: openaiMessages,
 		Stream:   true,
 	}
 
-	tokenStream := make(chan string)
-	errorStream := make(chan error)
+	tokenStream := make(chan *models.ChatResponse)
 
 	go func() {
 		defer close(tokenStream)
-		defer close(errorStream)
 
-		stream, err := model.client.CreateChatCompletionStream(ctx, req)
+		openaiStream, err := model.client.CreateChatCompletionStream(ctx, req)
 		if err != nil {
-			errorStream <- err
+			logrus.WithError(err).Error("Error connecting to OpenAI.")
+			tokenStream <- &models.ChatResponse{
+				Error: ptr.Of("Error connecting to OpenAI."),
+			}
 			return
 		}
-		defer stream.Close()
+		defer func() {
+			if err := openaiStream.Close(); err != nil {
+				logrus.WithError(err).Error("Failed to close OpenAI stream.")
+			}
+		}()
 
 		for {
-			response, err := stream.Recv()
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				errorStream <- err
+			select {
+			case <-ctx.Done():
 				return
+			case <-cancel:
+				return
+			default:
+				response, err := openaiStream.Recv()
+				if err != nil {
+					if err == io.EOF {
+						tokenStream <- &models.ChatResponse{
+							Done: ptr.Of(true),
+						}
+					} else {
+						logrus.WithError(err).Error("Error during OpenAI content stream.")
+						tokenStream <- &models.ChatResponse{
+							Error: ptr.Of("Error during OpenAI content stream."),
+						}
+					}
+					return
+				}
+				tokenStream <- &models.ChatResponse{
+					Content: ptr.Of(response.Choices[0].Delta.Content),
+				}
 			}
-			tokenStream <- response.Choices[0].Delta.Content
 		}
 	}()
 
-	return tokenStream, errorStream
+	return tokenStream, nil
 }

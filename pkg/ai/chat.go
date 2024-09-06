@@ -7,5 +7,5 @@ import (
 )
 
 type Chat interface {
-	Stream(context.Context, []models.ChatMessage) (<-chan string, <-chan error)
+	Stream(ctx context.Context, request *models.ChatRequest, cancel <-chan struct{}) (tokens <-chan *models.ChatResponse, err error)
 }

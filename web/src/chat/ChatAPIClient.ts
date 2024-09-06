@@ -12,9 +12,10 @@ export interface ChatRequest {
     messages: Message[];
 }
 
-export interface ApiStreamResponse {
+export interface ChatResponse {
     content: string | null;
-    success: boolean | null;
+    done: boolean | null;
+    error: string | null;
 }
 
 export type TokenCallback = (token: string) => void;
@@ -41,11 +42,10 @@ export default class ChatAPIClient {
                 const lines = chunk.split('\n').filter(Boolean);
                 for (const line of lines) {
                     if (line.trim()) {
-                        const streamResponse: ApiStreamResponse = JSON.parse(line);
-                        if (streamResponse.success != null) {
-                            if (!streamResponse.success) {
-                                throw new Error('Error during token stream.');
-                            }
+                        const streamResponse: ChatResponse = JSON.parse(line);
+                        if (streamResponse.error != null) {
+                            throw new Error(streamResponse.error);
+                        } else if (streamResponse.done != null && streamResponse.done) {
                             break;
                         } else if (streamResponse.content != null) {
                             tokenCallback(streamResponse.content);

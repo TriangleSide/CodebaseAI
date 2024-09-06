@@ -54,7 +54,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
     }
 
     fetchAmalgamData = async () => {
-        if (this.props.projectId == undefined) {
+        if (this.props.projectId === undefined) {
             this.setState({
                 amalgamError: 'A project is not selected',
                 amalgamData: null,

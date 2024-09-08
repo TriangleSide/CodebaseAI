@@ -27,7 +27,7 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 		project := &models.Project{
 			Id: ptr.Of(requestParameters.ProjectId),
 		}
-		err := a.projectDAO.Get(project)
+		err := a.projectDAO.Get(r.Context(), project)
 		if err != nil {
 			return nil, 0, err
 		}

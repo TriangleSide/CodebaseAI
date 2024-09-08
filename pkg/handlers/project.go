@@ -22,9 +22,22 @@ func NewProject(projectDAO projects.DAO) *Project {
 	}
 }
 
+func (p *Project) Get(w http.ResponseWriter, r *http.Request) {
+	responders.JSON(w, r, func(request *models.GetProjectRequest) (*models.Project, int, error) {
+		project := &models.Project{
+			Id: request.Id,
+		}
+		err := p.projectDAO.Get(r.Context(), project)
+		if err != nil {
+			return nil, 0, err
+		}
+		return project, http.StatusOK, nil
+	})
+}
+
 func (p *Project) List(w http.ResponseWriter, r *http.Request) {
 	responders.JSON(w, r, func(*models.ListProjectsRequest) (*models.ListProjectsResponse, int, error) {
-		projectList, err := p.projectDAO.List()
+		projectList, err := p.projectDAO.List(r.Context())
 		if err != nil {
 			return nil, 0, err
 		}
@@ -42,7 +55,7 @@ func (p *Project) Create(w http.ResponseWriter, r *http.Request) {
 		project := &models.Project{
 			Path: &requestParameters.Path,
 		}
-		if err := p.projectDAO.Create(project); err != nil {
+		if err := p.projectDAO.Create(r.Context(), project); err != nil {
 			return nil, 0, err
 		}
 		return project, http.StatusAccepted, nil
@@ -51,13 +64,29 @@ func (p *Project) Create(w http.ResponseWriter, r *http.Request) {
 
 func (p *Project) Delete(w http.ResponseWriter, r *http.Request) {
 	responders.Status(w, r, func(requestParameters *models.DeleteProjectRequest) (int, error) {
-		deleted, err := p.projectDAO.Delete(&models.Project{
+		deleted, err := p.projectDAO.Delete(r.Context(), &models.Project{
 			Id: requestParameters.Id,
 		})
 		if err != nil {
 			return 0, err
 		}
 		if deleted {
+			return http.StatusOK, nil
+		} else {
+			return http.StatusNoContent, nil
+		}
+	})
+}
+
+func (p *Project) Update(w http.ResponseWriter, r *http.Request) {
+	responders.Status(w, r, func(requestParameters *models.UpdateProjectRequest) (int, error) {
+		updated, err := p.projectDAO.Update(r.Context(), &models.Project{
+			Id: requestParameters.Id,
+		})
+		if err != nil {
+			return 0, err
+		}
+		if updated {
 			return http.StatusOK, nil
 		} else {
 			return http.StatusNoContent, nil
@@ -77,6 +106,10 @@ func (p *Project) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {
 	})
 
 	builder.MustRegister(api.PathProjectId, http.MethodOptions, nil)
+	builder.MustRegister(api.PathProjectId, http.MethodGet, &baseapi.Handler{
+		Middleware: nil,
+		Handler:    p.Get,
+	})
 	builder.MustRegister(api.PathProjectId, http.MethodDelete, &baseapi.Handler{
 		Middleware: nil,
 		Handler:    p.Delete,

@@ -9,6 +9,16 @@ type Project struct {
 	SelectedTime *time.Time `json:"selectedTime"`
 }
 
+type GetProjectRequest struct {
+	Id *int `urlPath:"projectId" json:"-" validate:"required"`
+}
+
+type ListProjectsRequest struct{}
+
+type ListProjectsResponse struct {
+	Projects []*Project `json:"projects"`
+}
+
 type CreateProjectRequest struct {
 	Path string `json:"path" validate:"required"`
 }
@@ -17,8 +27,6 @@ type DeleteProjectRequest struct {
 	Id *int `urlPath:"projectId" json:"-" validate:"required"`
 }
 
-type ListProjectsRequest struct{}
-
-type ListProjectsResponse struct {
-	Projects []*Project `json:"projects"`
+type UpdateProjectRequest struct {
+	Id *int `urlPath:"projectId" json:"-" validate:"required"`
 }

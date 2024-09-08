@@ -1,1 +1,1 @@
-SELECT id, path FROM projects WHERE id = ? OR path = ?;
+SELECT id, path, create_time, update_time FROM projects WHERE id = ?;

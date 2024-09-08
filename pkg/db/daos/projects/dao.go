@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -107,7 +108,8 @@ func (p *dao) Create(project *models.Project) error {
 		}
 	}()
 
-	result, err := statement.Exec(project.Path)
+	createTime := time.Now()
+	result, err := statement.Exec(project.Path, createTime, createTime)
 	if err != nil {
 		return fmt.Errorf("error executing SQL statement (%s)", err.Error())
 	}

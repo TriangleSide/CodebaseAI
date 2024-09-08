@@ -114,4 +114,8 @@ func (p *Project) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {
 		Middleware: nil,
 		Handler:    p.Delete,
 	})
+	builder.MustRegister(api.PathProjectId, http.MethodPut, &baseapi.Handler{
+		Middleware: nil,
+		Handler:    p.Update,
+	})
 }

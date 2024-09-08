@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
@@ -68,7 +69,7 @@ func (p *dao) Get(ctx context.Context, project *models.Project) error {
 	}()
 
 	if rows.Next() {
-		if err := rows.Scan(&project.Id, &project.Path, &project.CreatedTime, &project.SelectedTime); err != nil {
+		if err := rows.Scan(&project.Id, &project.Path, &project.CreatedTime, &project.UpdateTime); err != nil {
 			return err
 		}
 		return nil
@@ -91,7 +92,7 @@ func (p *dao) List(ctx context.Context) ([]*models.Project, error) {
 	projects := make([]*models.Project, 0)
 	for rows.Next() {
 		project := &models.Project{}
-		if err := rows.Scan(&project.Id, &project.Path, &project.CreatedTime, &project.SelectedTime); err != nil {
+		if err := rows.Scan(&project.Id, &project.Path, &project.CreatedTime, &project.UpdateTime); err != nil {
 			return nil, err
 		}
 		projects = append(projects, project)

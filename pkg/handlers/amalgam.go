@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/amalgam"
@@ -29,6 +30,7 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		err := a.projectDAO.Get(r.Context(), project)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to get project %+v", requestParameters)
 			return nil, 0, err
 		}
 

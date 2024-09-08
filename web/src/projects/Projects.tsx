@@ -43,13 +43,15 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
                 error: null,
                 selectedProjectId: undefined,
             })
-            const response = await ProjectAPIClient.list();
-            const projects = response.projects;
+            const listProjectsResponse = await ProjectAPIClient.list();
+            const projects = listProjectsResponse.projects;
+            const selectedId = projects.length > 0 ? projects[0].id : undefined
+            const sortedProjects = projects.sort((a, b) => a.path.localeCompare(b.path));
             this.setState({
-                projects: projects,
+                projects: sortedProjects,
                 loading: false,
                 error: null,
-                selectedProjectId: projects.length > 0 ? projects[0].id : undefined
+                selectedProjectId: selectedId
             });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
@@ -108,10 +110,15 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
         }
     };
 
-    handleSelect = (id: number) => {
+    handleSelect = async (id: number) => {
         this.setState({
             selectedProjectId: id
         });
+        try {
+            await ProjectAPIClient.update(id);
+        } catch (err) {
+            console.error("Failed to update project", id, err);
+        }
     };
 
     render() {

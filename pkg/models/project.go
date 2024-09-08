@@ -3,10 +3,10 @@ package models
 import "time"
 
 type Project struct {
-	Id           *int       `json:"id"`
-	Path         *string    `json:"path"`
-	CreatedTime  *time.Time `json:"createdTime"`
-	SelectedTime *time.Time `json:"selectedTime"`
+	Id          *int       `json:"id"`
+	Path        *string    `json:"path"`
+	CreatedTime *time.Time `json:"createdTime"`
+	UpdateTime  *time.Time `json:"updateTime"`
 }
 
 type GetProjectRequest struct {

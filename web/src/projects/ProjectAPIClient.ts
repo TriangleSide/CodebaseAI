@@ -3,7 +3,7 @@ import {ContentTypes} from "../http/Headers";
 import {Methods} from "../http/Methods";
 
 export interface Project {
-    id?: number;
+    id: number;
     path: string;
 }
 
@@ -42,6 +42,16 @@ export class ProjectAPIClient {
     static async delete(projectId: number): Promise<void> {
         const response = await fetch(Paths.projectId(projectId), {
             method: Methods.DELETE,
+        });
+
+        if (!response.ok) {
+            throw new Error(`${response.status} ${response.statusText}`);
+        }
+    }
+
+    static async update(projectId: number): Promise<void> {
+        const response = await fetch(Paths.projectId(projectId), {
+            method: Methods.PUT,
         });
 
         if (!response.ok) {

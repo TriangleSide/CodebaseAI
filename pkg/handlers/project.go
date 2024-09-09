@@ -36,8 +36,10 @@ func (p *Project) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Project) List(w http.ResponseWriter, r *http.Request) {
-	responders.JSON(w, r, func(*models.ListProjectsRequest) (*models.ListProjectsResponse, int, error) {
-		projectList, err := p.projectDAO.List(r.Context())
+	responders.JSON(w, r, func(requestParameters *models.ListProjectsRequest) (*models.ListProjectsResponse, int, error) {
+		projectList, err := p.projectDAO.List(r.Context(), &projects.ListParameters{
+			Limit: requestParameters.Limit,
+		})
 		if err != nil {
 			return nil, 0, err
 		}

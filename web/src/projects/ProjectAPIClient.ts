@@ -12,8 +12,15 @@ export interface ListProjectsResponse {
 }
 
 export class ProjectAPIClient {
-    static async list(): Promise<ListProjectsResponse> {
-        const response = await fetch(Paths.PROJECTS);
+    private static readonly LIST_LIMIT_HEADER = 'limit';
+
+    static async list(limit?: number): Promise<ListProjectsResponse> {
+        const queryParams = new URLSearchParams();
+        if (limit !== undefined) {
+            queryParams.set(ProjectAPIClient.LIST_LIMIT_HEADER, limit.toString());
+        }
+
+        const response = await fetch(`${Paths.PROJECTS}?${queryParams.toString()}`);
         if (response.ok) {
             const data: ListProjectsResponse = await response.json();
             return data;

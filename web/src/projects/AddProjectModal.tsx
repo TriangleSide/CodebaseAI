@@ -1,18 +1,18 @@
 import React from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-interface AddProjectModalProps {
+interface Props {
     show: boolean;
     onHide: () => void;
     onAddProject: (path: string) => void;
 }
 
-interface AddProjectModalState {
+interface State {
     projectPath: string;
 }
 
-export default class AddProjectModal extends React.Component<AddProjectModalProps, AddProjectModalState> {
-    constructor(props: AddProjectModalProps) {
+export default class AddProjectModal extends React.Component<Props, State> {
+    constructor(props: Props) {
         super(props);
         this.state = { projectPath: '' };
     }

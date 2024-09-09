@@ -3,15 +3,11 @@ import { Button, Container, ListGroup } from 'react-bootstrap';
 import { ProjectAPIClient, Project } from "./ProjectAPIClient";
 import AddProjectModal from './AddProjectModal';
 
-interface ChildProps {
-    projectId?: number;
-}
-
-interface ProjectsProps {
+interface Props {
     children?: React.ReactNode;
 }
 
-interface ProjectsState {
+interface State {
     projects: Project[];
     loading: boolean;
     error: string | null;
@@ -19,8 +15,8 @@ interface ProjectsState {
     selectedProjectId?: number;
 }
 
-export default class Projects extends React.Component<ProjectsProps, ProjectsState> {
-    constructor(props: ProjectsProps) {
+export default class Projects extends React.Component<Props, State> {
+    constructor(props: Props) {
         super(props);
         this.state = {
             projects: [],
@@ -165,14 +161,7 @@ export default class Projects extends React.Component<ProjectsProps, ProjectsSta
                                     </ListGroup.Item>
                                 ))}
                             </ListGroup>
-                            {projects.length > 0 ? React.Children.map(this.props.children, child => {
-                                if (React.isValidElement<ChildProps>(child)) {
-                                    return React.cloneElement(child, {
-                                        projectId: selectedProjectId
-                                    });
-                                }
-                                return child;
-                            }) : null}
+                            {this.props.children}
                         </div>
                     )}
                     <AddProjectModal

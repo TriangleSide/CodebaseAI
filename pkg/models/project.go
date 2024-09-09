@@ -13,7 +13,9 @@ type GetProjectRequest struct {
 	Id *int `urlPath:"projectId" json:"-" validate:"required"`
 }
 
-type ListProjectsRequest struct{}
+type ListProjectsRequest struct {
+	Limit *int `urlQuery:"limit" json:"-"`
+}
 
 type ListProjectsResponse struct {
 	Projects []*Project `json:"projects"`

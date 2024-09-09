@@ -5,12 +5,24 @@ import ChatCard from "./ChatCard";
 import {AmalgamSummary} from "../amalgam/Amalgam";
 import AmalgamAPIClient, {AmalgamResponse} from "../amalgam/AmalgamAPIClient";
 import {Roles} from "./Roles";
+import {Project} from "../projects/ProjectAPIClient";
+import {RootState} from "../state/Reducer";
+import {connect, ConnectedProps} from "react-redux";
 
-export interface ChatProps {
-    projectId?: number;
+interface ReduxProps {
+    selectedProject: Project | null;
 }
 
-export interface ChatState {
+const reduxMapStateToProps = (state: RootState): Partial<ReduxProps> => ({
+    selectedProject: state.project.selectedProject
+});
+
+const reduxConnector = connect(reduxMapStateToProps);
+type reduxConnectedProps = ConnectedProps<typeof reduxConnector>;
+
+interface Props extends reduxConnectedProps {}
+
+interface State {
     amalgamError: string | null;
     amalgamLoading: boolean;
     amalgamData: AmalgamResponse | null;
@@ -19,16 +31,16 @@ export interface ChatState {
     loading: boolean;
 }
 
-export default class Chat extends React.Component<ChatProps, ChatState> {
+class Chat extends React.Component<Props, State> {
     chatContainerRef: React.RefObject<HTMLDivElement>;
 
-    constructor(props: ChatProps) {
+    constructor(props: Props) {
         super(props);
         this.state = this.emptyState();
         this.chatContainerRef = React.createRef();
     }
 
-    emptyState(): ChatState {
+    emptyState(): State {
         return {
             amalgamError: null,
             amalgamLoading: true,
@@ -43,8 +55,8 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
         this.fetchAmalgamData();
     }
 
-    componentDidUpdate(prevProps: ChatProps) {
-        if (this.props.projectId !== prevProps.projectId) {
+    componentDidUpdate(prevProps: Props) {
+        if (this.props.selectedProject?.id !== prevProps.selectedProject?.id) {
             this.setState(this.emptyState());
             this.fetchAmalgamData();
         }
@@ -54,21 +66,16 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
     }
 
     fetchAmalgamData = async () => {
-        if (this.props.projectId === undefined) {
-            this.setState({
-                amalgamError: 'A project is not selected',
-                amalgamData: null,
-                amalgamLoading: false,
-            });
-            return
-        }
         this.setState({
             amalgamError: null,
             amalgamData: null,
             amalgamLoading: true,
         });
         try {
-            const data = await AmalgamAPIClient.fetchAmalgam(this.props.projectId);
+            if (!this.props.selectedProject) {
+                throw new Error('Project not found');
+            }
+            const data = await AmalgamAPIClient.fetchAmalgam(this.props.selectedProject.id);
             this.setState({
                 amalgamError: null,
                 amalgamData: data,
@@ -98,7 +105,7 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
         });
 
         const tokenCallback = (token: string) => {
-            this.setState((prevState: ChatState) => {
+            this.setState((prevState: State) => {
                 const updatedMessages: Message[] = [...prevState.messages];
                 const lastMessage: Message = updatedMessages[updatedMessages.length - 1];
 
@@ -191,3 +198,5 @@ export default class Chat extends React.Component<ChatProps, ChatState> {
         );
     }
 }
+
+export default reduxConnector(Chat);

@@ -12,6 +12,10 @@ import (
 	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
 )
 
+const (
+	defaultListLimit = 128
+)
+
 var (
 	//go:embed get.sql
 	getSql string
@@ -29,9 +33,17 @@ var (
 	updateSql string
 )
 
+type GetParameters struct {
+	Id int
+}
+
+type ListParameters struct {
+	Limit *int
+}
+
 type DAO interface {
 	Get(context.Context, *models.Project) error
-	List(context.Context) ([]*models.Project, error)
+	List(context.Context, *ListParameters) ([]*models.Project, error)
 	Create(context.Context, *models.Project) error
 	Delete(context.Context, *models.Project) (bool, error)
 	Update(context.Context, *models.Project) (bool, error)
@@ -78,10 +90,25 @@ func (p *dao) Get(ctx context.Context, project *models.Project) error {
 	return fmt.Errorf("project not found")
 }
 
-func (p *dao) List(ctx context.Context) ([]*models.Project, error) {
-	rows, err := p.db.QueryContext(ctx, listSql)
+func (p *dao) List(ctx context.Context, params *ListParameters) ([]*models.Project, error) {
+	statement, err := p.db.PrepareContext(ctx, listSql)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing SQL statement (%s)", err.Error())
+	}
+	defer func() {
+		if err := statement.Close(); err != nil {
+			logrus.WithError(err).Error("Failed to close statement.")
+		}
+	}()
+
+	listLimit := defaultListLimit
+	if params.Limit != nil {
+		listLimit = *params.Limit
+	}
+
+	rows, err := statement.QueryContext(ctx, listLimit)
+	if err != nil {
+		return nil, fmt.Errorf("error executing SQL statement (%s)", err.Error())
 	}
 	defer func() {
 		if err := rows.Close(); err != nil {

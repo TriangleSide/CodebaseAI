@@ -3,14 +3,14 @@ import { Card } from 'react-bootstrap';
 import ReactMarkdown from 'react-markdown';
 import {Roles, role} from "./Roles";
 
-export interface ChatCardState {}
-export interface ChatCardProps {
+interface Props {
     role: role;
     content: string;
 }
+interface State {}
 
-export default class ChatCard extends React.Component<ChatCardProps, ChatCardState> {
-    constructor(props: ChatCardProps) {
+export default class ChatCard extends React.Component<Props, State> {
+    constructor(props: Props) {
         super(props);
         this.state = {};
     }

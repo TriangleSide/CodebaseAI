@@ -1,12 +1,24 @@
 import React from 'react';
 import { Button, Container } from 'react-bootstrap';
 import AmalgamAPIClient, {AmalgamResponse} from "./AmalgamAPIClient";
+import {Project} from "../projects/ProjectAPIClient";
+import {RootState} from "../state/Reducer";
+import {connect, ConnectedProps} from "react-redux";
 
-export interface AmalgamProps {
-    projectId?: number;
+interface ReduxProps {
+    selectedProject: Project | null;
 }
 
-export interface AmalgamState {
+const reduxMapStateToProps = (state: RootState): Partial<ReduxProps> => ({
+    selectedProject: state.project.selectedProject
+});
+
+const reduxConnector = connect(reduxMapStateToProps);
+type reduxConnectedProps = ConnectedProps<typeof reduxConnector>;
+
+interface Props extends reduxConnectedProps {}
+
+interface State {
     amalgam: AmalgamResponse | null;
     loading: boolean;
     error: string | null;
@@ -17,8 +29,8 @@ export function AmalgamSummary(amalgam: AmalgamResponse | null): string {
     return "Character count: " + amalgam?.content.length + ". Token count: " + amalgam?.tokenCount + "."
 }
 
-export default class Amalgam extends React.Component<AmalgamProps, AmalgamState> {
-    constructor(props: AmalgamProps) {
+class Amalgam extends React.Component<Props, State> {
+    constructor(props: Props) {
         super(props);
         this.state = {
             amalgam: null,
@@ -32,27 +44,17 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
         this.fetchAmalgamData();
     }
 
-    componentDidUpdate(prevProps: AmalgamProps) {
-        if (this.props.projectId !== prevProps.projectId) {
-            this.fetchAmalgamData();
-        }
-    }
-
     fetchAmalgamData = async () => {
-        if (this.props.projectId === undefined) {
-            this.setState({
-                error: 'A project is not selected',
-                loading: false,
-            });
-            return
-        }
         this.setState({
             amalgam: null,
             loading: true,
             error: null,
         });
         try {
-            const data = await AmalgamAPIClient.fetchAmalgam(this.props.projectId);
+            if (!this.props.selectedProject) {
+                throw new Error('Project not found');
+            }
+            const data = await AmalgamAPIClient.fetchAmalgam(this.props.selectedProject.id);
             this.setState({
                 amalgam: data,
                 loading: false
@@ -126,3 +128,5 @@ export default class Amalgam extends React.Component<AmalgamProps, AmalgamState>
         );
     }
 }
+
+export default reduxConnector(Amalgam);

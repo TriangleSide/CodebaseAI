@@ -1,16 +1,17 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navbar, Nav, Container } from 'react-bootstrap';
-import AmalgamContainer from "./amalgam/AmalgamContainer";
-import ChatContainer from "./chat/ChatContainer";
+import AmalgamWrapper from "./amalgam/AmalgamWrapper";
+import ChatWrapper from "./chat/ChatWrapper";
+import Projects from "./projects/Projects";
 import Home from "./Home";
 import './App.css';
 
-export interface AppProps {}
-export interface AppState {}
+interface Props {}
+interface State {}
 
-export default class App extends React.Component<AppProps, AppState> {
-    constructor(props: AppProps) {
+export default class App extends React.Component<Props, State> {
+    constructor(props: Props) {
         super(props);
         this.state = {};
     }
@@ -25,6 +26,7 @@ export default class App extends React.Component<AppProps, AppState> {
                         <Navbar.Collapse id="basic-navbar-nav">
                             <Nav className="me-auto">
                                 <Nav.Link href="/">Home</Nav.Link>
+                                <Nav.Link href="/projects">Projects</Nav.Link>
                                 <Nav.Link href="/amalgam">Amalgam</Nav.Link>
                                 <Nav.Link href="/chat">Chat</Nav.Link>
                             </Nav>
@@ -34,8 +36,9 @@ export default class App extends React.Component<AppProps, AppState> {
                 <Container>
                     <Routes>
                         <Route path="/" element={<Home />} />
-                        <Route path="/amalgam" element={<AmalgamContainer />} />
-                        <Route path="/chat" element={<ChatContainer />} />
+                        <Route path="/amalgam" element={<AmalgamWrapper />} />
+                        <Route path="/chat" element={<ChatWrapper />} />
+                        <Route path="/projects" element={<Projects />} />
                     </Routes>
                 </Container>
             </Router>

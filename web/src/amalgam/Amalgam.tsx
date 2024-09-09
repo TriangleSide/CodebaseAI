@@ -4,6 +4,8 @@ import AmalgamAPIClient, {AmalgamResponse} from "./AmalgamAPIClient";
 import {Project} from "../projects/ProjectAPIClient";
 import {RootState} from "../state/Reducer";
 import {connect, ConnectedProps} from "react-redux";
+import {AmalgamSummary} from "./AmalgamSummary";
+import {ProjectSummary} from "../projects/ProjectSummary";
 
 interface ReduxProps {
     selectedProject: Project | null;
@@ -23,10 +25,6 @@ interface State {
     loading: boolean;
     error: string | null;
     copied: boolean;
-}
-
-export function AmalgamSummary(amalgam: AmalgamResponse | null): string {
-    return "Character count: " + amalgam?.content.length + ". Token count: " + amalgam?.tokenCount + "."
 }
 
 class Amalgam extends React.Component<Props, State> {
@@ -104,6 +102,9 @@ class Amalgam extends React.Component<Props, State> {
                         {copied ? "Copied!" : "Copy to Clipboard"}
                     </Button>
                     <br/><br/>
+                    <p>
+                        {ProjectSummary(this.props.selectedProject)}
+                    </p>
                     <p>
                         {AmalgamSummary(amalgam)}
                     </p>

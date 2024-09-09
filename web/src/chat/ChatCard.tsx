@@ -32,7 +32,9 @@ export default class ChatCard extends React.Component<Props, State> {
         return (
             <Card className={`mb-2 text-white bg-dark card-${role}`}>
                 <Card.Body>
-                    <ReactMarkdown>{`**${user}:**\n\n${content}`}</ReactMarkdown>
+                    <ReactMarkdown>
+                        {`**${user}:**\n\n${content}`}
+                    </ReactMarkdown>
                 </Card.Body>
             </Card>
         );

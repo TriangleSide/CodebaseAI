@@ -2,12 +2,13 @@ import React from 'react';
 import { Container, Form, Button } from 'react-bootstrap';
 import ChatAPIClient, { Message } from "./ChatAPIClient";
 import ChatCard from "./ChatCard";
-import {AmalgamSummary} from "../amalgam/Amalgam";
+import {AmalgamSummary} from "../amalgam/AmalgamSummary";
 import AmalgamAPIClient, {AmalgamResponse} from "../amalgam/AmalgamAPIClient";
 import {Roles} from "./Roles";
 import {Project} from "../projects/ProjectAPIClient";
 import {RootState} from "../state/Reducer";
 import {connect, ConnectedProps} from "react-redux";
+import {ProjectSummary} from "../projects/ProjectSummary";
 
 interface ReduxProps {
     selectedProject: Project | null;
@@ -168,6 +169,7 @@ class Chat extends React.Component<Props, State> {
         } else {
             amalgamMsg = "Error loading codebase amalgam."
         }
+        amalgamMsg = ProjectSummary(this.props.selectedProject) + "\n\n" + amalgamMsg
 
         return (
             <Container>

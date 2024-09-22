@@ -76,7 +76,7 @@ func main() {
 		}
 		httpConfig.HTTPServerBindIP = serverIp
 		httpConfig.HTTPServerBindPort = serverPort
-		httpConfig.HTTPServerTLS = false
+		httpConfig.HTTPServerTLSMode = baseconfig.HTTPServerTLSModeOff
 		return httpConfig, nil
 	}))
 	if err != nil {

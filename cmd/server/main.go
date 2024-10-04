@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -69,36 +70,49 @@ func main() {
 	}
 
 	logrus.Info("Creating the HTTP server.")
-	httpServer, err := server.New(server.WithConfigProvider(func() (*baseconfig.HTTPServer, error) {
-		httpConfig, err := envprocessor.ProcessAndValidate[baseconfig.HTTPServer]()
-		if err != nil {
-			return nil, err
-		}
-		httpConfig.HTTPServerBindIP = serverIp
-		httpConfig.HTTPServerBindPort = serverPort
-		httpConfig.HTTPServerTLSMode = baseconfig.HTTPServerTLSModeOff
-		return httpConfig, nil
-	}))
+	httpServer, err := server.New(
+		server.WithConfigProvider(func() (*baseconfig.HTTPServer, error) {
+			httpConfig, err := envprocessor.ProcessAndValidate[baseconfig.HTTPServer]()
+			if err != nil {
+				return nil, err
+			}
+			httpConfig.HTTPServerBindIP = serverIp
+			httpConfig.HTTPServerBindPort = serverPort
+			httpConfig.HTTPServerTLSMode = baseconfig.HTTPServerTLSModeOff
+			return httpConfig, nil
+		}),
+		server.WithCommonMiddleware(httpCommonMiddleware...),
+		server.WithEndpointHandlers(httpEndpointHandlers...),
+		server.WithBoundCallback(func(tcpAddr *net.TCPAddr) {
+			logrus.Infof("The HTTP server has started on %s.", tcpAddr.String())
+		}),
+	)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create HTTP server.")
 	}
 
+	logrus.Info("Starting the HTTP server.")
+	serverClosed := make(chan struct{})
+	go func() {
+		if err := httpServer.Run(); err != nil {
+			logrus.WithError(err).Fatal("Encountered an error while running the HTTP server.")
+		}
+		close(serverClosed)
+	}()
+
 	logrus.Info("Watching for a SIGINT signal.")
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, os.Kill)
-	go func() {
-		<-signalChan
-		logrus.Info("Shutting down the HTTP server.")
-		if err := httpServer.Shutdown(ctx); err != nil {
-			logrus.WithError(err).Error("Error shutting down the HTTP server.")
-		}
-	}()
+	select {
+	case <-signalChan:
+		logrus.Info("Received SIGINT signal.")
+	case <-serverClosed:
+		logrus.Info("HTTP Server Closed.")
+	}
 
-	logrus.Info("Starting the HTTP server.")
-	if err := httpServer.Run(httpCommonMiddleware, httpEndpointHandlers, func() {
-		logrus.Info("The HTTP server has started.")
-	}); err != nil {
-		logrus.WithError(err).Fatal("Encountered an error while running the HTTP server.")
+	logrus.Info("Shutting down the HTTP server.")
+	if err := httpServer.Shutdown(ctx); err != nil {
+		logrus.WithError(err).Error("Error shutting down the HTTP server.")
 	}
 
 	logrus.Info("Closing the database connection.")

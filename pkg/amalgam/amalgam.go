@@ -2,6 +2,7 @@ package amalgam
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"go/parser"
 	"go/token"
@@ -10,8 +11,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/tiktoken-go/tokenizer"
+
+	"github.com/TriangleSide/GoBase/pkg/logger"
 )
 
 const (
@@ -57,8 +59,8 @@ type fileContent struct {
 	Package string
 }
 
-func Get(root string) (string, int, error) {
-	moduleName, err := getModuleName(root)
+func Get(ctx context.Context, root string) (string, int, error) {
+	moduleName, err := getModuleName(ctx, root)
 	if err != nil {
 		return "", -1, err
 	}
@@ -89,15 +91,15 @@ func Get(root string) (string, int, error) {
 	return amalgamStr, len(tokenIds), nil
 }
 
-func getModuleName(root string) (string, error) {
+func getModuleName(ctx context.Context, root string) (string, error) {
 	goModPath := filepath.Join(root, GoMod)
 	file, err := os.Open(goModPath)
 	if err != nil {
-		return "", fmt.Errorf("error while opening %s (%s)", goModPath, err.Error())
+		return "", fmt.Errorf("error while opening %s (%w)", goModPath, err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			logrus.Errorf("error while closing go.mod file (%s)", err.Error())
+			logger.Errorf(ctx, "error while closing go.mod file (%s)", err.Error())
 		}
 	}()
 
@@ -112,7 +114,7 @@ func getModuleName(root string) (string, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return "", fmt.Errorf("error while reading %s (%s)", goModPath, err.Error())
+		return "", fmt.Errorf("error while reading %s (%w)", goModPath, err)
 	}
 
 	return "", fmt.Errorf("go module name not found in %s", goModPath)
@@ -163,7 +165,7 @@ func readFiles(root string, moduleName string, files []string) ([]fileContent, e
 	for _, file := range files {
 		content, err := os.ReadFile(file)
 		if err != nil {
-			return nil, fmt.Errorf("error reading file %s (%s)", file, err.Error())
+			return nil, fmt.Errorf("error reading file %s (%w)", file, err)
 		}
 
 		relativePath, err := filepath.Rel(root, file)
@@ -182,7 +184,7 @@ func readFiles(root string, moduleName string, files []string) ([]fileContent, e
 			fset := token.NewFileSet()
 			node, err := parser.ParseFile(fset, file, content, parser.ImportsOnly)
 			if err != nil {
-				return nil, fmt.Errorf("error parsing go file (%s)", err.Error())
+				return nil, fmt.Errorf("error parsing go file (%w)", err)
 			}
 
 			for _, imp := range node.Imports {

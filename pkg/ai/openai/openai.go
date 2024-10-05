@@ -5,13 +5,12 @@ import (
 	_ "embed"
 	"io"
 
-	"github.com/sashabaranov/go-openai"
-	"github.com/sirupsen/logrus"
-
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
+	"github.com/TriangleSide/GoBase/pkg/logger"
 	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
+	"github.com/sashabaranov/go-openai"
 )
 
 //go:embed instructions.txt
@@ -58,7 +57,7 @@ func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest
 
 		openaiStream, err := model.client.CreateChatCompletionStream(ctx, req)
 		if err != nil {
-			logrus.WithError(err).Error("Error connecting to OpenAI.")
+			logger.Errorf(ctx, "Error connecting to OpenAI (%s).", err)
 			tokenStream <- &models.ChatResponse{
 				Error: ptr.Of("Error connecting to OpenAI."),
 			}
@@ -66,7 +65,7 @@ func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest
 		}
 		defer func() {
 			if err := openaiStream.Close(); err != nil {
-				logrus.WithError(err).Error("Failed to close OpenAI stream.")
+				logger.Errorf(ctx, "Failed to close OpenAI stream (%s).", err)
 			}
 		}()
 
@@ -84,7 +83,7 @@ func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest
 							Done: ptr.Of(true),
 						}
 					} else {
-						logrus.WithError(err).Error("Error during OpenAI content stream.")
+						logger.Errorf(ctx, "Error during OpenAI content stream (%s).", err)
 						tokenStream <- &models.ChatResponse{
 							Error: ptr.Of("Error during OpenAI content stream."),
 						}

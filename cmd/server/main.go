@@ -7,8 +7,6 @@ import (
 	"os/signal"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/TriangleSide/CodebaseAI/pkg/ai/openai"
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
 	"github.com/TriangleSide/CodebaseAI/pkg/db"
@@ -32,44 +30,44 @@ func main() {
 	ctx := context.Background()
 
 	logger.MustConfigure()
-	logrus.Infof("Using the log level %s.", strings.ToUpper(logrus.GetLevel().String()))
+	logger.Infof(ctx, "Using the log level %s.", strings.ToUpper(logger.GetLevel().String()))
 
 	cfg, err := envprocessor.ProcessAndValidate[config.Config]()
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to process configuration.")
+		logger.Fatalf(ctx, "Failed to process configuration (%s).", err)
 	}
-	logrus.Infof("Using model version '%s'.", cfg.ModelVersion)
+	logger.Infof(ctx, "Using model version '%s'.", cfg.ModelVersion)
 
-	logrus.Info("Connecting to the database.")
+	logger.Info(ctx, "Connecting to the database.")
 	database, err := db.NewSQLiteDB()
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to connect to the database.")
+		logger.Fatalf(ctx, "Failed to connect to the database (%s).", err)
 	}
 
-	logrus.Info("Initializing the database.")
+	logger.Info(ctx, "Initializing the database.")
 	if err := database.InitializeDB(); err != nil {
-		logrus.WithError(err).Fatal("Failed to initialize the database.")
+		logger.Fatal(ctx, "Failed to initialize the database.")
 	}
 
-	logrus.Info("Creating the DAOs.")
+	logger.Info(ctx, "Creating the DAOs.")
 	projectDAO := projects.NewDAO(database.DB())
 
-	logrus.Info("Creating the OpenAI chat handler.")
+	logger.Info(ctx, "Creating the OpenAI chat handler.")
 	aiChat := openai.NewOpenAIChat(cfg)
 
-	logrus.Info("Configuring the common middleware.")
+	logger.Info(ctx, "Configuring the common middleware.")
 	httpCommonMiddleware := []basemiddleware.Middleware{
 		middleware.Cors,
 	}
 
-	logrus.Info("Configuring the API handlers.")
+	logger.Info(ctx, "Configuring the API handlers.")
 	httpEndpointHandlers := []api.HTTPEndpointHandler{
 		handlers.NewAmalgam(projectDAO),
 		handlers.NewChat(aiChat),
 		handlers.NewProject(projectDAO),
 	}
 
-	logrus.Info("Creating the HTTP server.")
+	logger.Info(ctx, "Creating the HTTP server.")
 	httpServer, err := server.New(
 		server.WithConfigProvider(func() (*baseconfig.HTTPServer, error) {
 			httpConfig, err := envprocessor.ProcessAndValidate[baseconfig.HTTPServer]()
@@ -84,42 +82,42 @@ func main() {
 		server.WithCommonMiddleware(httpCommonMiddleware...),
 		server.WithEndpointHandlers(httpEndpointHandlers...),
 		server.WithBoundCallback(func(tcpAddr *net.TCPAddr) {
-			logrus.Infof("The HTTP server has started on %s.", tcpAddr.String())
+			logger.Infof(ctx, "The HTTP server has started on %s.", tcpAddr.String())
 		}),
 	)
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to create HTTP server.")
+		logger.Fatalf(ctx, "Failed to create HTTP server (%s).", err)
 	}
 
-	logrus.Info("Starting the HTTP server.")
+	logger.Info(ctx, "Starting the HTTP server.")
 	serverClosed := make(chan struct{})
 	go func() {
 		if err := httpServer.Run(); err != nil {
-			logrus.WithError(err).Fatal("Encountered an error while running the HTTP server.")
+			logger.Fatalf(ctx, "Encountered an error while running the HTTP server (%s).", err)
 		}
 		close(serverClosed)
 	}()
 
-	logrus.Info("Watching for a SIGINT signal.")
+	logger.Info(ctx, "Watching for a SIGINT signal.")
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, os.Kill)
 	select {
 	case <-signalChan:
-		logrus.Info("Received SIGINT signal.")
+		logger.Info(ctx, "Received SIGINT signal.")
 	case <-serverClosed:
-		logrus.Info("HTTP Server Closed.")
+		logger.Info(ctx, "HTTP Server Closed.")
 	}
 
-	logrus.Info("Shutting down the HTTP server.")
+	logger.Info(ctx, "Shutting down the HTTP server.")
 	if err := httpServer.Shutdown(ctx); err != nil {
-		logrus.WithError(err).Error("Error shutting down the HTTP server.")
+		logger.Errorf(ctx, "Error shutting down the HTTP server (%s).", err)
 	}
 
-	logrus.Info("Closing the database connection.")
+	logger.Info(ctx, "Closing the database connection.")
 	if err := database.Close(); err != nil {
-		logrus.WithError(err).Error("Error closing the database connection.")
+		logger.Errorf(ctx, "Error closing the database connection (%s).", err)
 	}
 
-	logrus.Info("API exiting.")
+	logger.Info(ctx, "API exiting.")
 	os.Exit(0)
 }

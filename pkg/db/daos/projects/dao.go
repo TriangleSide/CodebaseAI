@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	_ "embed"
+	"errors"
 	"fmt"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
+	"github.com/TriangleSide/GoBase/pkg/logger"
 	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
 )
 
@@ -62,21 +62,21 @@ func NewDAO(db *sql.DB) DAO {
 func (p *dao) Get(ctx context.Context, project *models.Project) error {
 	statement, err := p.db.PrepareContext(ctx, getSql)
 	if err != nil {
-		return fmt.Errorf("error preparing SQL statement (%s)", err.Error())
+		return fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logrus.WithError(err).Error("Failed to close statement.")
+			logger.Errorf(ctx, "Failed to close statement (%s).", err)
 		}
 	}()
 
 	rows, err := statement.QueryContext(ctx, project.Id)
 	if err != nil {
-		return fmt.Errorf("error executing SQL statement (%s)", err.Error())
+		return fmt.Errorf("error executing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := rows.Close(); err != nil {
-			logrus.WithError(err).Error("Failed to close rows.")
+			logger.Errorf(ctx, "Failed to close rows (%s).", err)
 		}
 	}()
 
@@ -87,17 +87,17 @@ func (p *dao) Get(ctx context.Context, project *models.Project) error {
 		return nil
 	}
 
-	return fmt.Errorf("project not found")
+	return errors.New("project not found")
 }
 
 func (p *dao) List(ctx context.Context, params *ListParameters) ([]*models.Project, error) {
 	statement, err := p.db.PrepareContext(ctx, listSql)
 	if err != nil {
-		return nil, fmt.Errorf("error preparing SQL statement (%s)", err.Error())
+		return nil, fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logrus.WithError(err).Error("Failed to close statement.")
+			logger.Errorf(ctx, "Failed to close statement (%s).", err)
 		}
 	}()
 
@@ -108,11 +108,11 @@ func (p *dao) List(ctx context.Context, params *ListParameters) ([]*models.Proje
 
 	rows, err := statement.QueryContext(ctx, listLimit)
 	if err != nil {
-		return nil, fmt.Errorf("error executing SQL statement (%s)", err.Error())
+		return nil, fmt.Errorf("error executing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := rows.Close(); err != nil {
-			logrus.WithError(err).Error("Failed to close rows.")
+			logger.Errorf(ctx, "Failed to close rows (%s).", err.Error())
 		}
 	}()
 
@@ -131,22 +131,22 @@ func (p *dao) List(ctx context.Context, params *ListParameters) ([]*models.Proje
 func (p *dao) Create(ctx context.Context, project *models.Project) error {
 	statement, err := p.db.PrepareContext(ctx, createSql)
 	if err != nil {
-		return fmt.Errorf("error preparing SQL statement (%s)", err.Error())
+		return fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logrus.WithError(err).Error("Failed to close statement.")
+			logger.Errorf(ctx, "Failed to close statement (%s).", err)
 		}
 	}()
 
 	result, err := statement.ExecContext(ctx, project.Path)
 	if err != nil {
-		return fmt.Errorf("error executing SQL statement (%s)", err.Error())
+		return fmt.Errorf("error executing SQL statement (%w)", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return fmt.Errorf("error fetching last insert ID (%s)", err.Error())
+		return fmt.Errorf("error fetching last insert ID (%w)", err)
 	}
 
 	project.Id = ptr.Of(int(id))
@@ -156,22 +156,22 @@ func (p *dao) Create(ctx context.Context, project *models.Project) error {
 func (p *dao) Delete(ctx context.Context, project *models.Project) (bool, error) {
 	statement, err := p.db.PrepareContext(ctx, deleteSql)
 	if err != nil {
-		return false, fmt.Errorf("error preparing SQL statement (%s)", err.Error())
+		return false, fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logrus.WithError(err).Error("Failed to close statement.")
+			logger.Errorf(ctx, "Failed to close statement (%s).", err)
 		}
 	}()
 
 	result, err := statement.ExecContext(ctx, project.Id)
 	if err != nil {
-		return false, fmt.Errorf("error executing SQL statement (%s)", err.Error())
+		return false, fmt.Errorf("error executing SQL statement (%w)", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return false, fmt.Errorf("error fetching rows affected (%s)", err.Error())
+		return false, fmt.Errorf("error fetching rows affected (%w)", err)
 	}
 
 	return rowsAffected > 0, nil
@@ -184,22 +184,22 @@ func (p *dao) Update(ctx context.Context, project *models.Project) (bool, error)
 
 	statement, err := p.db.PrepareContext(ctx, updateSql)
 	if err != nil {
-		return false, fmt.Errorf("error preparing SQL statement (%s)", err.Error())
+		return false, fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logrus.WithError(err).Error("Failed to close statement.")
+			logger.Errorf(ctx, "Failed to close statement (%s).", err)
 		}
 	}()
 
 	result, err := statement.ExecContext(ctx, *project.Id)
 	if err != nil {
-		return false, fmt.Errorf("error executing SQL statement (%s)", err.Error())
+		return false, fmt.Errorf("error executing SQL statement (%w)", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return false, fmt.Errorf("error fetching rows affected (%s)", err.Error())
+		return false, fmt.Errorf("error fetching rows affected (%w)", err)
 	}
 
 	return rowsAffected > 0, nil

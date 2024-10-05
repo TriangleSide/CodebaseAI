@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/amalgam"
@@ -10,6 +9,7 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
 	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
 	"github.com/TriangleSide/GoBase/pkg/http/responders"
+	"github.com/TriangleSide/GoBase/pkg/logger"
 	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
 )
 
@@ -30,11 +30,11 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		err := a.projectDAO.Get(r.Context(), project)
 		if err != nil {
-			logrus.WithError(err).Error("Failed to get project %+v", requestParameters)
+			logger.Errorf(r.Context(), "Failed to get project (%s).", err.Error())
 			return nil, 0, err
 		}
 
-		amalgamContent, tokenCount, err := amalgam.Get(*project.Path)
+		amalgamContent, tokenCount, err := amalgam.Get(r.Context(), *project.Path)
 		if err != nil {
 			return nil, 0, err
 		}

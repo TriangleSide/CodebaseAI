@@ -1,6 +1,6 @@
 # CodebaseAI
 
-CodebaseAI is designed to help you perform AI inference on your entire GoLang codebase. It leverages OpenAI's GPT models to provide insights and recommendations based on the content of your codebase.
+CodebaseAI is designed to help you chat with AI on your entire codebase.
 
 ## Prerequisites
 

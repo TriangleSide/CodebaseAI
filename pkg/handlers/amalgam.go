@@ -36,6 +36,7 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 
 		amalgamContent, tokenCount, err := amalgam.Get(r.Context(), *project.Path)
 		if err != nil {
+			logger.Errorf(r.Context(), "Failed to get amalgam (%s).", err.Error())
 			return nil, 0, err
 		}
 

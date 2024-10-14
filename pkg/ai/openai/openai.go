@@ -29,7 +29,7 @@ func NewOpenAIChat(cfg *config.Config) ai.Chat {
 	}
 }
 
-func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest, cancel <-chan struct{}) (tokens <-chan *models.ChatResponse, err error) {
+func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest) (tokens <-chan *models.ChatResponse, err error) {
 	openaiMessages := make([]openai.ChatCompletionMessage, 0)
 
 	openaiMessages = append(openaiMessages, openai.ChatCompletionMessage{
@@ -57,10 +57,7 @@ func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest
 
 		openaiStream, err := model.client.CreateChatCompletionStream(ctx, req)
 		if err != nil {
-			logger.Errorf(ctx, "Error connecting to OpenAI (%s).", err)
-			tokenStream <- &models.ChatResponse{
-				Error: ptr.Of("Error connecting to OpenAI."),
-			}
+			_ = sendOverChannel(ctx, tokenStream, &models.ChatResponse{Done: ptr.Of(true), Error: ptr.Of("Error connecting to OpenAI.")})
 			return
 		}
 		defer func() {
@@ -70,32 +67,31 @@ func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest
 		}()
 
 		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-cancel:
-				return
-			default:
-				response, err := openaiStream.Recv()
-				if err != nil {
-					if err == io.EOF {
-						tokenStream <- &models.ChatResponse{
-							Done: ptr.Of(true),
-						}
-					} else {
-						logger.Errorf(ctx, "Error during OpenAI content stream (%s).", err)
-						tokenStream <- &models.ChatResponse{
-							Error: ptr.Of("Error during OpenAI content stream."),
-						}
-					}
-					return
+			response, err := openaiStream.Recv()
+			if err != nil {
+				msg := &models.ChatResponse{Done: ptr.Of(true)}
+				if err == io.EOF {
+					_ = sendOverChannel(ctx, tokenStream, msg)
+				} else {
+					msg.Error = ptr.Of(err.Error())
+					_ = sendOverChannel(ctx, tokenStream, msg)
 				}
-				tokenStream <- &models.ChatResponse{
-					Content: ptr.Of(response.Choices[0].Delta.Content),
-				}
+				return
+			}
+			if !sendOverChannel(ctx, tokenStream, &models.ChatResponse{Content: ptr.Of(response.Choices[0].Delta.Content)}) {
+				return
 			}
 		}
 	}()
 
 	return tokenStream, nil
+}
+
+func sendOverChannel(ctx context.Context, stream chan<- *models.ChatResponse, msg *models.ChatResponse) bool {
+	select {
+	case <-ctx.Done():
+		return false
+	case stream <- msg:
+		return true
+	}
 }

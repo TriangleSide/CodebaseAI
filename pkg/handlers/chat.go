@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"github.com/TriangleSide/GoBase/pkg/http/responders"
 	"net/http"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
 	"github.com/TriangleSide/CodebaseAI/pkg/api"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
 	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
+	"github.com/TriangleSide/GoBase/pkg/http/responders"
 )
 
 type Chat struct {
@@ -21,8 +21,8 @@ func NewChat(aiChat ai.Chat) *Chat {
 }
 
 func (c *Chat) Stream(w http.ResponseWriter, r *http.Request) {
-	responders.JSONStream(w, r, func(requestParameters *models.ChatRequest, cancelChan <-chan struct{}) (<-chan *models.ChatResponse, int, error) {
-		tokenStream, err := c.aiChat.Stream(r.Context(), requestParameters, cancelChan)
+	responders.JSONStream(w, r, func(requestParameters *models.ChatRequest) (<-chan *models.ChatResponse, int, error) {
+		tokenStream, err := c.aiChat.Stream(r.Context(), requestParameters)
 		if err != nil {
 			return nil, 0, err
 		}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/TriangleSide/GoBase/pkg/validation"
 	"net"
 	"os"
 	"os/signal"
@@ -14,7 +15,6 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/handlers"
 	"github.com/TriangleSide/CodebaseAI/pkg/middleware"
 	baseconfig "github.com/TriangleSide/GoBase/pkg/config"
-	"github.com/TriangleSide/GoBase/pkg/config/envprocessor"
 	"github.com/TriangleSide/GoBase/pkg/http/api"
 	basemiddleware "github.com/TriangleSide/GoBase/pkg/http/middleware"
 	"github.com/TriangleSide/GoBase/pkg/http/server"
@@ -32,7 +32,7 @@ func main() {
 	logger.MustConfigure()
 	logger.Infof(ctx, "Using the log level %s.", strings.ToUpper(logger.GetLevel().String()))
 
-	cfg, err := envprocessor.ProcessAndValidate[config.Config]()
+	cfg, err := baseconfig.ProcessAndValidate[config.Config]()
 	if err != nil {
 		logger.Fatalf(ctx, "Failed to process configuration (%s).", err)
 	}
@@ -69,14 +69,18 @@ func main() {
 
 	logger.Info(ctx, "Creating the HTTP server.")
 	httpServer, err := server.New(
-		server.WithConfigProvider(func() (*baseconfig.HTTPServer, error) {
-			httpConfig, err := envprocessor.ProcessAndValidate[baseconfig.HTTPServer]()
+		server.WithConfigProvider(func() (*server.Config, error) {
+			httpConfig, err := baseconfig.Process[server.Config]()
 			if err != nil {
 				return nil, err
 			}
 			httpConfig.HTTPServerBindIP = serverIp
 			httpConfig.HTTPServerBindPort = serverPort
-			httpConfig.HTTPServerTLSMode = baseconfig.HTTPServerTLSModeOff
+			httpConfig.HTTPServerTLSMode = server.TLSModeOff
+			err = validation.Struct(httpConfig)
+			if err != nil {
+				return nil, err
+			}
 			return httpConfig, nil
 		}),
 		server.WithCommonMiddleware(httpCommonMiddleware...),

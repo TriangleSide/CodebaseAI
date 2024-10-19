@@ -29,7 +29,7 @@ func NewManager(db *db.SQLiteDB) basemigration.Manager {
 }
 
 func generateMachineID() string {
-	timestamp := time.Now().Format("20060102150405")
+	timestamp := time.Now().Format(time.RFC3339Nano)
 	pid := os.Getpid()
 	return fmt.Sprintf("machine_%s_%d", timestamp, pid)
 }

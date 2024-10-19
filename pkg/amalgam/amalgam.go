@@ -2,57 +2,80 @@ package amalgam
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/tiktoken-go/tokenizer"
+
+	"github.com/TriangleSide/CodebaseAI/pkg/config"
+	baseconfig "github.com/TriangleSide/GoBase/pkg/config"
+	"github.com/TriangleSide/GoBase/pkg/logger"
 )
 
 var (
-	allowedFiles = map[string]struct{}{
-		"Makefile": {},
-	}
-	allowedExtensions = map[string]struct{}{
-		".go":    {},
-		".md":    {},
-		".ts":    {},
-		".tsx":   {},
-		".html":  {},
-		".css":   {},
-		".sql":   {},
-		".proto": {},
-		".cpp":   {},
-		".cc":    {},
-		".c":     {},
-		".h":     {},
-	}
-	disallowedPaths = map[string]struct{}{
-		"bin":          {},
-		"node_modules": {},
-	}
-	disallowedFileNameParts = map[string]struct{}{
-		"coverage.html": {},
-	}
+	allowedExactFiles    = make(map[string]struct{})
+	allowedSuffix        = make(map[string]struct{})
+	disallowedExactPaths = make(map[string]struct{})
+	disallowedSuffix     = make(map[string]struct{})
 )
 
 var (
 	tokenizerCodec tokenizer.Codec
 )
 
-func init() {
-	var err error
-	if tokenizerCodec, err = tokenizer.ForModel(tokenizer.GPT4); err != nil {
-		panic("Unable to get tokenizer codec for GPT4 model.")
-	}
-}
-
 type fileContent struct {
 	Path    string
 	Content string
 	Imports []string
 	Package string
+}
+
+func init() {
+	ctx := context.Background()
+	cfg, err := baseconfig.ProcessAndValidate[config.Config]()
+	if err != nil {
+		logger.Fatalf(ctx, "Failed to read the configuration (%s)", err.Error())
+	}
+	if tokenizerCodec, err = tokenizer.ForModel(tokenizer.Model(cfg.ModelVersion)); err != nil {
+		logger.Fatalf(ctx, "Unable to get tokenizer codec for %s model.", cfg.ModelVersion)
+	}
+	loadConfig("amalgam.json")
+}
+
+func loadConfig(filepath string) {
+	data, err := os.ReadFile(filepath)
+	if err != nil {
+		log.Fatalf("Error reading config file: %v", err)
+	}
+
+	type AmalgamConfig struct {
+		AllowedExactFiles    []string `json:"allowedExactFiles"`
+		AllowedSuffix        []string `json:"allowedSuffix"`
+		DisallowedExactPaths []string `json:"disallowedExactPaths"`
+		DisallowedSuffix     []string `json:"disallowedSuffix"`
+	}
+	var amalgamConfig AmalgamConfig
+
+	if err = json.Unmarshal(data, &amalgamConfig); err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+
+	for _, file := range amalgamConfig.AllowedExactFiles {
+		allowedExactFiles[file] = struct{}{}
+	}
+	for _, suffix := range amalgamConfig.AllowedSuffix {
+		allowedSuffix[suffix] = struct{}{}
+	}
+	for _, path := range amalgamConfig.DisallowedExactPaths {
+		disallowedExactPaths[path] = struct{}{}
+	}
+	for _, suffix := range amalgamConfig.DisallowedSuffix {
+		disallowedSuffix[suffix] = struct{}{}
+	}
 }
 
 func Get(ctx context.Context, root string) (string, int, error) {
@@ -90,26 +113,26 @@ func collectFiles(root string) ([]string, error) {
 
 		pathParts := strings.Split(path, string(filepath.Separator))
 		for _, pathPart := range pathParts {
-			if _, hasPathPart := disallowedPaths[strings.ToLower(pathPart)]; hasPathPart {
+			if _, hasPathPart := disallowedExactPaths[strings.ToLower(pathPart)]; hasPathPart {
 				return nil
 			}
 		}
 
 		if !info.IsDir() {
 			_, file := filepath.Split(path)
-			for disallowedFileNamePart := range disallowedFileNameParts {
-				if strings.Contains(strings.ToLower(file), strings.ToLower(disallowedFileNamePart)) {
+			for disallowed := range disallowedSuffix {
+				if strings.HasSuffix(strings.ToLower(file), strings.ToLower(disallowed)) {
 					return nil
 				}
 			}
 
-			if _, ok := allowedFiles[file]; ok {
+			if _, ok := allowedExactFiles[file]; ok {
 				files = append(files, path)
 				return nil
 			}
 
 			ext := filepath.Ext(path)
-			if _, ok := allowedExtensions[ext]; ok {
+			if _, ok := allowedSuffix[ext]; ok {
 				files = append(files, path)
 				return nil
 			}

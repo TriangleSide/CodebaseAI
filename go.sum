@@ -1,5 +1,7 @@
 github.com/TriangleSide/GoBase v0.0.0-20241014172542-0983cdc143db h1:Uuq3GAXprajNDruJLuvn2CcvRhsp0F5yjPmoajHlwNo=
 github.com/TriangleSide/GoBase v0.0.0-20241014172542-0983cdc143db/go.mod h1:lwcmjwm/gLlfGOqtZA6bRgpr/RTP7S7Grz5b6LR1jpI=
+github.com/TriangleSide/GoBase v0.0.0-20241019011732-0ee07e63960b h1:oyMxmghK2pcZ6Es+w/toSai0wLTmLqNqxMKskeVHnAs=
+github.com/TriangleSide/GoBase v0.0.0-20241019011732-0ee07e63960b/go.mod h1:lwcmjwm/gLlfGOqtZA6bRgpr/RTP7S7Grz5b6LR1jpI=
 github.com/dlclark/regexp2 v1.11.4 h1:rPYF9/LECdNymJufQKmri9gV604RvvABwgOA8un7yAo=
 github.com/dlclark/regexp2 v1.11.4/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
 github.com/mattn/go-sqlite3 v1.14.24 h1:tpSp2G2KyMnnQu99ngJ47EIkWVmliIizyZBfPrBWDRM=
@@ -8,5 +10,7 @@ github.com/sashabaranov/go-openai v1.32.0 h1:Yk3iE9moX3RBXxrof3OBtUBrE7qZR0zF9eb
 github.com/sashabaranov/go-openai v1.32.0/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/sashabaranov/go-openai v1.32.1 h1:JmdOa6d+cQwvGpBJigQf+dq40Qc20b+1HcXRGVOmqFw=
 github.com/sashabaranov/go-openai v1.32.1/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
+github.com/sashabaranov/go-openai v1.32.2 h1:8z9PfYaLPbRzmJIYpwcWu6z3XU8F+RwVMF1QRSeSF2M=
+github.com/sashabaranov/go-openai v1.32.2/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/tiktoken-go/tokenizer v0.2.0 h1:MqBlDeE5LRIEpapZk5s7COS9taGtRRIwM8bPxq13rI8=
 github.com/tiktoken-go/tokenizer v0.2.0/go.mod h1:7SZW3pZUKWLJRilTvWCa86TOVIiiJhYj3FQ5V3alWcg=

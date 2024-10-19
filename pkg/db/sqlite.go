@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	_ "embed"
 	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -11,11 +10,6 @@ import (
 const (
 	driverName   = "sqlite3"
 	databaseFile = "sqlite.db"
-)
-
-var (
-	//go:embed initialize.sql
-	initializeSql string
 )
 
 type SQLiteDB struct {
@@ -30,14 +24,6 @@ func NewSQLiteDB() (*SQLiteDB, error) {
 	return &SQLiteDB{
 		db: db,
 	}, nil
-}
-
-func (s *SQLiteDB) InitializeDB() error {
-	_, err := s.db.Exec(initializeSql)
-	if err != nil {
-		return fmt.Errorf("failed to execute query (%s)", err.Error())
-	}
-	return nil
 }
 
 func (s *SQLiteDB) Close() error {

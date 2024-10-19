@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/TriangleSide/CodebaseAI/pkg/db/migration"
+	basemigration "github.com/TriangleSide/GoBase/pkg/database/migration"
 	"github.com/TriangleSide/GoBase/pkg/validation"
 	"net"
 	"os"
@@ -44,9 +46,10 @@ func main() {
 		logger.Fatalf(ctx, "Failed to connect to the database (%s).", err)
 	}
 
-	logger.Info(ctx, "Initializing the database.")
-	if err := database.InitializeDB(); err != nil {
-		logger.Fatal(ctx, "Failed to initialize the database.")
+	logger.Info(ctx, "Performing DB migrations.")
+	migrationManager := migration.NewManager(database)
+	if err = basemigration.Migrate(migrationManager); err != nil {
+		logger.Fatalf(ctx, "Failed to perform migration (%s).", err)
 	}
 
 	logger.Info(ctx, "Creating the DAOs.")
@@ -70,13 +73,13 @@ func main() {
 	logger.Info(ctx, "Creating the HTTP server.")
 	httpServer, err := server.New(
 		server.WithConfigProvider(func() (*server.Config, error) {
-			httpConfig, err := baseconfig.Process[server.Config]()
+			httpConfig, err := baseconfig.Process[server.Config](baseconfig.WithPrefix(server.ConfigPrefix))
 			if err != nil {
 				return nil, err
 			}
-			httpConfig.HTTPServerBindIP = serverIp
-			httpConfig.HTTPServerBindPort = serverPort
-			httpConfig.HTTPServerTLSMode = server.TLSModeOff
+			httpConfig.BindIP = serverIp
+			httpConfig.BindPort = serverPort
+			httpConfig.TLSMode = server.TLSModeOff
 			err = validation.Struct(httpConfig)
 			if err != nil {
 				return nil, err

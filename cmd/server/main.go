@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/TriangleSide/CodebaseAI/pkg/db/migration"
+	"github.com/TriangleSide/CodebaseAI/pkg/db/migrations"
 	basemigration "github.com/TriangleSide/GoBase/pkg/database/migration"
 	"github.com/TriangleSide/GoBase/pkg/validation"
 	"net"
@@ -47,7 +47,7 @@ func main() {
 	}
 
 	logger.Info(ctx, "Performing DB migrations.")
-	migrationManager := migration.NewManager(database)
+	migrationManager := migrations.NewManager(database)
 	if err = basemigration.Migrate(migrationManager); err != nil {
 		logger.Fatalf(ctx, "Failed to perform migration (%s).", err)
 	}

@@ -19,9 +19,8 @@ const reduxMapStateToProps = (state: RootState): Partial<ReduxProps> => ({
 });
 
 const reduxConnector = connect(reduxMapStateToProps);
-type reduxConnectedProps = ConnectedProps<typeof reduxConnector>;
 
-interface Props extends reduxConnectedProps {}
+interface Props extends ConnectedProps<typeof reduxConnector> {}
 
 interface State {
     amalgamError: string | null;
@@ -196,6 +195,7 @@ class Chat extends React.Component<Props, State> {
                 <Button onClick={this.handleSendMessage} variant="primary" disabled={loading || amalgamLoading}>
                     {loading ? 'Sending...' : 'Send'}
                 </Button>
+                <br/><br/>
             </Container>
         );
     }

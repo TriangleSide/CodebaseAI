@@ -3,15 +3,15 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: {
-        root: './src/index.tsx',
-        amalgam: './src/amalgam.tsx',
-        projects: './src/projects.tsx',
-        chat: './src/chat.tsx',
+        home: './src/home/index.tsx',
+        amalgam: './src/amalgam/index.tsx',
+        projects: './src/projects/index.tsx',
+        chat: './src/chat/index.tsx',
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: (pathData) => {
-            return pathData.chunk.name === 'root' ? 'bundle.js' : '[name]/bundle.js';
+            return pathData.chunk.name === 'home' ? 'bundle.js' : '[name]/bundle.js';
         },
     },
     resolve: {
@@ -36,7 +36,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: './src/template.html',
-            chunks: ['root'],
+            chunks: ['home'],
         }),
         new HtmlWebpackPlugin({
             filename: 'amalgam/index.html',

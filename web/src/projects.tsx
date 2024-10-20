@@ -1,8 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import {renderPage} from "./page";
-import Home from "./home/Home";
+import Projects from "./projects/Projects";
 
 renderPage(
-    <Home />
+    <Projects />
 )

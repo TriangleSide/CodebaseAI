@@ -1,16 +1,17 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import ReactDOM from "react-dom/client";
 import { Navbar, Nav, Container } from 'react-bootstrap';
-import AmalgamWrapper from "./amalgam/AmalgamWrapper";
-import ChatWrapper from "./chat/ChatWrapper";
-import Projects from "./projects/Projects";
-import Home from "./Home";
-import './App.css';
+import store from "./state/Store";
+import {Provider} from "react-redux";
+import './page.css';
 
-interface Props {}
+interface Props {
+    children: React.ReactNode;
+}
+
 interface State {}
 
-export default class App extends React.Component<Props, State> {
+class Page extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {};
@@ -18,7 +19,7 @@ export default class App extends React.Component<Props, State> {
 
     render() {
         return (
-            <Router>
+            <Provider store={store}>
                 <Navbar bg="dark" variant="dark" expand="lg">
                     <Container>
                         <Navbar.Brand href="/">CodebaseAI</Navbar.Brand>
@@ -34,14 +35,18 @@ export default class App extends React.Component<Props, State> {
                     </Container>
                 </Navbar>
                 <Container>
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/amalgam" element={<AmalgamWrapper />} />
-                        <Route path="/chat" element={<ChatWrapper />} />
-                        <Route path="/projects" element={<Projects />} />
-                    </Routes>
+                    {this.props.children}
                 </Container>
-            </Router>
+            </Provider>
         );
     }
+}
+
+export function renderPage(children: React.ReactNode) {
+    const root = ReactDOM.createRoot(document.getElementById('root')!);
+    root.render(
+        <Page>
+            {children}
+        </Page>
+    );
 }

@@ -7,20 +7,20 @@ import AmalgamAPIClient, {AmalgamResponse} from "../amalgam/AmalgamAPIClient";
 import {Roles} from "./Roles";
 import {Project} from "../projects/ProjectAPIClient";
 import {RootState} from "../state/Reducer";
-import {connect, ConnectedProps} from "react-redux";
 import {ProjectSummary} from "../projects/ProjectSummary";
+import {connectToRootStore} from "../state/Connect";
 
-interface ReduxProps {
+interface StoreProps {
     selectedProject: Project | null;
 }
 
-const reduxMapStateToProps = (state: RootState): Partial<ReduxProps> => ({
+const mapStoreToProps = (state: RootState): StoreProps => ({
     selectedProject: state.project.selectedProject
 });
 
-const reduxConnector = connect(reduxMapStateToProps);
+interface OwnProps {}
 
-interface Props extends ConnectedProps<typeof reduxConnector> {}
+type Props = OwnProps & StoreProps
 
 interface State {
     amalgamError: string | null;
@@ -201,4 +201,4 @@ class Chat extends React.Component<Props, State> {
     }
 }
 
-export default reduxConnector(Chat);
+export default connectToRootStore<OwnProps, StoreProps>(Chat, mapStoreToProps);

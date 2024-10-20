@@ -2,7 +2,7 @@ import React from 'react';
 import { ProjectAPIClient, Project } from "./ProjectAPIClient";
 import {connect, ConnectedProps} from 'react-redux';
 import {RootState} from "../state/Reducer";
-import {setSelectedProject} from "./SelectedProjectState";
+import {setSelectedProject} from "./SelectedProjectStore";
 import { Dispatch } from 'redux';
 
 interface ReduxProps {

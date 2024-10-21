@@ -91,7 +91,7 @@ func Get(ctx context.Context, root string) (string, int, error) {
 
 	sb := strings.Builder{}
 	for _, fc := range fileContents {
-		sb.WriteString(fmt.Sprintf("// Start File: %s\n\n%s\n\n// End File: %s\n\n", fc.Path, strings.TrimSpace(fc.Content), fc.Path))
+		sb.WriteString(fmt.Sprintf("// File: %s\n\n%s\n\n", fc.Path, strings.TrimSpace(fc.Content)))
 	}
 
 	amalgamStr := sb.String()

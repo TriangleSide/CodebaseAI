@@ -1,70 +1,84 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const WebpackCdnPlugin = require('webpack-cdn-plugin');
 
-module.exports = {
-    entry: {
-        home: './src/home/index.tsx',
-        amalgam: './src/amalgam/index.tsx',
-        projects: './src/projects/index.tsx',
-        chat: './src/chat/index.tsx',
-    },
-    output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: (pathData) => {
-            return pathData.chunk.name === 'home' ? 'bundle.js' : '[name]/bundle.js';
+const entries = {
+    home: './src/home/index.tsx',
+    amalgam: './src/amalgam/index.tsx',
+    projects: './src/projects/index.tsx',
+    chat: './src/chat/index.tsx',
+};
+
+module.exports = (env, argv) => {
+    const isProduction = argv.mode === 'production';
+    return {
+        mode: isProduction ? 'production' : 'development',
+        entry: entries,
+        output: {
+            path: path.resolve(__dirname, 'dist'),
+            filename: (pathData) => {
+                return pathData.chunk.name === 'home' ? 'bundle.js' : '[name]/bundle.js';
+            },
+            publicPath: '/',
+            clean: true,
         },
-        publicPath: './',
-    },
-    resolve: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    },
-    module: {
-        rules: [
-            {
-                test: /\.(js|jsx|ts|tsx)$/,
-                exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
+        resolve: {
+            extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.(js|jsx|ts|tsx)$/,
+                    exclude: /node_modules/,
+                    use: {
+                        loader: 'babel-loader',
+                    },
                 },
-            },
-            {
-                test: /\.css$/,
-                use: ['style-loader', 'css-loader'],
-            },
+                {
+                    test: /\.css$/,
+                    use: ['style-loader', 'css-loader'],
+                },
+            ],
+        },
+        plugins: [
+            ...Object.keys(entries).map((key) => {
+                return new HtmlWebpackPlugin({
+                    inject: 'body',
+                    filename: key === 'home' ? 'index.html' : `${key}/index.html`,
+                    template: './src/template.html',
+                    chunks: [key],
+                });
+            }),
+            new WebpackCdnPlugin({
+                modules: [
+                    {
+                        name: 'react',
+                        var: 'React',
+                        path: isProduction
+                            ? 'umd/react.production.min.js'
+                            : 'umd/react.development.js',
+                    },
+                    {
+                        name: 'react-dom',
+                        var: 'ReactDOM',
+                        path: isProduction
+                            ? 'umd/react-dom.production.min.js'
+                            : 'umd/react-dom.development.js',
+                    },
+                ],
+                sri: true,
+                optimize: true,
+                crossOrigin: 'anonymous',
+            }),
         ],
-    },
-    plugins: [
-        new HtmlWebpackPlugin({
-            inject: false,
-            filename: 'index.html',
-            template: './src/template.html',
-            chunks: ['home'],
-        }),
-        new HtmlWebpackPlugin({
-            inject: false,
-            filename: 'amalgam/index.html',
-            template: './src/template.html',
-            chunks: ['amalgam'],
-        }),
-        new HtmlWebpackPlugin({
-            inject: false,
-            filename: 'projects/index.html',
-            template: './src/template.html',
-            chunks: ['projects'],
-        }),
-        new HtmlWebpackPlugin({
-            inject: false,
-            filename: 'chat/index.html',
-            template: './src/template.html',
-            chunks: ['chat'],
-        }),
-    ],
-    devServer: {
-        static: path.resolve(__dirname, 'dist'),
-        port: 3000,
-        open: true,
-        hot: true,
-        historyApiFallback: true,  // Let React Router handle the routes
-    },
-    mode: 'development',
+        optimization: {
+            minimize: isProduction,
+        },
+        devServer: {
+            static: path.resolve(__dirname, 'dist'),
+            port: 3000,
+            open: true,
+            hot: true,
+        },
+    };
 };

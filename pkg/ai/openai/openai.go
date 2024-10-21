@@ -3,6 +3,7 @@ package openai
 import (
 	"context"
 	_ "embed"
+	"fmt"
 	"io"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
@@ -57,7 +58,7 @@ func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest
 
 		openaiStream, err := model.client.CreateChatCompletionStream(ctx, req)
 		if err != nil {
-			_ = sendOverChannel(ctx, tokenStream, &models.ChatResponse{Done: ptr.Of(true), Error: ptr.Of("Error connecting to OpenAI.")})
+			_ = sendOverChannel(ctx, tokenStream, &models.ChatResponse{Done: ptr.Of(true), Error: ptr.Of(fmt.Sprintf("Error connecting to OpenAI (%s).", err.Error()))})
 			return
 		}
 		defer func() {

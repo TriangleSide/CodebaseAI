@@ -13,6 +13,7 @@ module.exports = {
         filename: (pathData) => {
             return pathData.chunk.name === 'home' ? 'bundle.js' : '[name]/bundle.js';
         },
+        publicPath: './',
     },
     resolve: {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
@@ -34,21 +35,25 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
+            inject: false,
             filename: 'index.html',
             template: './src/template.html',
             chunks: ['home'],
         }),
         new HtmlWebpackPlugin({
+            inject: false,
             filename: 'amalgam/index.html',
             template: './src/template.html',
             chunks: ['amalgam'],
         }),
         new HtmlWebpackPlugin({
+            inject: false,
             filename: 'projects/index.html',
             template: './src/template.html',
             chunks: ['projects'],
         }),
         new HtmlWebpackPlugin({
+            inject: false,
             filename: 'chat/index.html',
             template: './src/template.html',
             chunks: ['chat'],

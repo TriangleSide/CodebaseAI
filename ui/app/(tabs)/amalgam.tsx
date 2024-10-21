@@ -1,7 +1,8 @@
 import React from 'react';
-import Amalgam from "@/amalgam/amalgam";
+import Amalgam from "@/amalgam/Amalgam";
 import {ThemedView} from "@/components/ThemedView";
 import {ScrollView} from "react-native";
+import SelectedProject from "@/projects/SelectedProject";
 
 interface Props {}
 interface State {}
@@ -16,7 +17,9 @@ class AmalgamScreen extends React.Component<Props, State> {
         return (
             <ScrollView>
                 <ThemedView>
-                    <Amalgam/>
+                    <SelectedProject>
+                        <Amalgam />
+                    </SelectedProject>
                 </ThemedView>
             </ScrollView>
         );

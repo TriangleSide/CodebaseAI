@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import {StyleSheet, View, Text, ScrollView} from 'react-native';
 import { Button } from 'react-native-elements';
 import AmalgamAPIClient, { AmalgamResponse } from "@/amalgam/AmalgamAPIClient";
 import { Project } from "@/projects/ProjectAPIClient";
@@ -7,6 +7,8 @@ import { RootState } from "@/state/Reducer";
 import { connect, ConnectedProps } from "react-redux";
 import { AmalgamSummary } from "@/amalgam/AmalgamSummary";
 import { ProjectSummary } from "@/projects/ProjectSummary";
+import {ThemedView} from "@/components/ThemedView";
+import {ThemedText} from "@/components/ThemedText";
 
 interface ReduxProps {
     selectedProject: Project | null;
@@ -88,41 +90,42 @@ class Amalgam extends React.Component<Props, State> {
         let content: React.ReactNode;
         if (loading) {
             content = (
-                <Text style={styles.message}>Loading...</Text>
+                <ThemedText style={styles.message}>Loading...</ThemedText>
             );
         } else if (error) {
             content = (
-                <Text style={styles.error}>Error: {error}</Text>
+                <ThemedText style={styles.error}>Error: {error}</ThemedText>
             );
         } else {
+            // @ts-ignore
             content = (
-                <View>
+                <ThemedView>
                     <Button
                         onPress={this.handleCopy}
                         title={copied ? "Copied!" : "Copy to Clipboard"}
                         buttonStyle={copied ? styles.copiedButton : styles.primaryButton}
                     />
-                    <View style={styles.spacing} />
-                    <Text style={styles.summaryText}>
+                    <ThemedView style={styles.spacing} />
+                    <ThemedText style={styles.summaryText}>
                         {ProjectSummary(selectedProject)}
-                    </Text>
-                    <Text style={styles.summaryText}>
+                    </ThemedText>
+                    <ThemedText style={styles.summaryText}>
                         {AmalgamSummary(amalgam)}
-                    </Text>
-                    <View style={styles.amalgamContainer}>
-                        <Text style={styles.amalgamContent}>{amalgam?.content}</Text>
-                    </View>
-                </View>
+                    </ThemedText>
+                    <ThemedView style={styles.amalgamContainer}>
+                        <ThemedText style={[{ fontSize: 12 }]}>
+                            {amalgam?.content}
+                        </ThemedText>
+                    </ThemedView>
+                </ThemedView>
             );
         }
 
         return (
-            <View style={styles.container}>
-                <View style={styles.innerContainer}>
-                    <Text style={styles.header}>Amalgam Data</Text>
-                    {content}
-                </View>
-            </View>
+            <ThemedView style={styles.container}>
+                <ThemedText style={styles.header}>Amalgam Data</ThemedText>
+                {content}
+            </ThemedView>
         );
     }
 }
@@ -131,10 +134,6 @@ const styles = StyleSheet.create({
     container: {
         padding: 16,
         flex: 1,
-        backgroundColor: '#fff',
-    },
-    innerContainer: {
-        // Additional styling if needed
     },
     header: {
         fontSize: 24,
@@ -142,7 +141,6 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     primaryButton: {
-        backgroundColor: '#2089dc', // Default react-native-elements primary color
     },
     copiedButton: {
         backgroundColor: 'green',
@@ -157,12 +155,9 @@ const styles = StyleSheet.create({
     amalgamContainer: {
         marginTop: 16,
         padding: 12,
-        backgroundColor: '#f0f0f0',
         borderRadius: 8,
-    },
-    amalgamContent: {
-        fontSize: 14,
-        color: '#333',
+        borderWidth: 2,
+        borderColor: 'blue',
     },
     message: {
         fontSize: 16,

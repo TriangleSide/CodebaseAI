@@ -12,11 +12,9 @@ export const projectSlice = createSlice({
     },
     reducers: {
         setSelectedProject: (state: ProjectReduxState, action: PayloadAction<Project | null>): void => {
-            console.log("set")
             state.selectedProject = action.payload;
         },
         clearSelectedProject: (state: ProjectReduxState): void => {
-            console.log("clear")
             state.selectedProject = null;
         },
     },

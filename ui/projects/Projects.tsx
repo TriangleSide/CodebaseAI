@@ -1,11 +1,8 @@
 import React from 'react';
 import {
-    View,
-    Text,
     StyleSheet,
     ActivityIndicator,
-    FlatList,
-    Alert
+    FlatList
 } from 'react-native';
 import { Button, ListItem } from 'react-native-elements';
 import AddProjectModal from '@/projects/AddProjectModal';
@@ -14,6 +11,9 @@ import {RootState} from "@/state/Reducer";
 import {Dispatch} from "redux";
 import {clearSelectedProject, setSelectedProject} from "@/projects/SelectedProjectStore";
 import {connect, ConnectedProps} from "react-redux";
+import ThemedListItem from "react-native-elements/dist/list/ListItem";
+import {ThemedView} from "@/components/ThemedView";
+import {ThemedText} from "@/components/ThemedText";
 
 interface ReduxProps {
     setSelectedProject: (project: Project | null) => void;
@@ -157,21 +157,21 @@ class Projects extends React.Component<Props, State> {
     renderItem = ({ item }: { item: Project }) => {
         const { selectedProjectId } = this.state;
         return (
-            <ListItem
+            <ThemedListItem
                 bottomDivider
                 onPress={() => this.handleSelect(item!)}
                 containerStyle={item.id === selectedProjectId ? styles.activeItem : styles.item}
             >
-                <ListItem.Content>
-                    <ListItem.Title>{item.path}</ListItem.Title>
-                </ListItem.Content>
+                <ThemedListItem.Content>
+                    <ThemedListItem.Title>{item.path}</ThemedListItem.Title>
+                </ThemedListItem.Content>
                 <Button
                     title="Delete"
                     type="clear"
                     titleStyle={{ color: 'red' }}
                     onPress={() => this.deleteProject(item!)}
                 />
-            </ListItem>
+            </ThemedListItem>
         );
     };
 
@@ -179,11 +179,11 @@ class Projects extends React.Component<Props, State> {
         const { projects, loading, error, showModal, selectedProjectId } = this.state;
 
         return (
-            <View style={styles.container}>
-                <Text style={styles.header}>Projects</Text>
-                <Text style={styles.description}>
+            <ThemedView style={styles.container}>
+                <ThemedText style={styles.header}>Projects</ThemedText>
+                <ThemedText style={styles.description}>
                     These are the absolute paths to the roots of your projects.
-                </Text>
+                </ThemedText>
                 <Button
                     title="Add New Project"
                     onPress={this.toggleModal}
@@ -192,11 +192,11 @@ class Projects extends React.Component<Props, State> {
                 {loading ? (
                     <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
                 ) : error ? (
-                    <Text style={styles.errorText}>{error}</Text>
+                    <ThemedText style={styles.errorText}>{error}</ThemedText>
                 ) : (
-                    <View style={styles.listContainer}>
+                    <ThemedView style={styles.listContainer}>
                         {projects.length > 0 && (
-                            <Text style={styles.selectText}>Select a project below.</Text>
+                            <ThemedText style={styles.selectText}>Select a project below.</ThemedText>
                         )}
                         <FlatList
                             data={projects}
@@ -204,14 +204,14 @@ class Projects extends React.Component<Props, State> {
                             renderItem={this.renderItem}
                         />
                         {this.props.children}
-                    </View>
+                    </ThemedView>
                 )}
                 <AddProjectModal
                     show={showModal}
                     onHide={this.toggleModal}
                     onAddProject={this.handleAddProject}
                 />
-            </View>
+            </ThemedView>
         );
     }
 }
@@ -220,7 +220,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
-        backgroundColor: '#fff',
     },
     header: {
         fontSize: 24,
@@ -232,7 +231,6 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     addButton: {
-        backgroundColor: '#2089dc',
         marginBottom: 16,
     },
     loader: {
@@ -251,10 +249,9 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     item: {
-        backgroundColor: '#fff',
     },
     activeItem: {
-        backgroundColor: '#cce5ff',
+        backgroundColor: "#123123"
     },
 });
 

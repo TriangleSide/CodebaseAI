@@ -174,39 +174,41 @@ class Chat extends React.Component<Props, State> {
         amalgamMsg = ProjectSummary(this.props.selectedProject) + "\n\n" + amalgamMsg
 
         return (
-            <KeyboardAvoidingView
-                style={styles.container}
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-                keyboardVerticalOffset={60}
-            >
-                <ThemedText style={styles.header}>Codebase AI Chat</ThemedText>
-                <ThemedText style={styles.description}>This app adds the codebase amalgam to the beginning of the chat.</ThemedText>
-                <ScrollView
-                    ref={this.chatScrollRef}
-                    style={styles.chatContainer}
-                    contentContainerStyle={styles.chatContent}
+            <ThemedView>
+                <KeyboardAvoidingView
+                    style={styles.container}
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    keyboardVerticalOffset={60}
                 >
-                    <ChatCard key={"amalgam"} role={Roles.CODEBASE} content={amalgamMsg} />
-                    {messages.map((msg, index) => (
-                        <ChatCard key={index} role={msg.role} content={msg.content} />
-                    ))}
-                </ScrollView>
-                <Input
-                    placeholder="Chat with AI about your codebase..."
-                    value={input}
-                    onChangeText={this.handleInputChange}
-                    onSubmitEditing={this.handleSendMessage}
-                    multiline
-                    containerStyle={styles.inputContainer}
-                    inputStyle={styles.input}
-                />
-                <Button
-                    title={loading ? 'Sending...' : 'Send'}
-                    onPress={this.handleSendMessage}
-                    disabled={loading || amalgamLoading}
-                    buttonStyle={styles.button}
-                />
-            </KeyboardAvoidingView>
+                    <ThemedText style={styles.header}>Codebase AI Chat</ThemedText>
+                    <ThemedText style={styles.description}>This app adds the codebase amalgam to the beginning of the chat.</ThemedText>
+                    <ScrollView
+                        ref={this.chatScrollRef}
+                        style={styles.chatContainer}
+                        contentContainerStyle={styles.chatContent}
+                    >
+                        <ChatCard key={"amalgam"} role={Roles.CODEBASE} content={amalgamMsg} />
+                        {messages.map((msg, index) => (
+                            <ChatCard key={index} role={msg.role} content={msg.content} />
+                        ))}
+                    </ScrollView>
+                    <Input
+                        placeholder="Chat with AI about your codebase..."
+                        value={input}
+                        onChangeText={this.handleInputChange}
+                        onSubmitEditing={this.handleSendMessage}
+                        multiline
+                        containerStyle={styles.inputContainer}
+                        inputStyle={styles.input}
+                    />
+                    <Button
+                        title={loading ? 'Sending...' : 'Send'}
+                        onPress={this.handleSendMessage}
+                        disabled={loading || amalgamLoading}
+                        buttonStyle={styles.button}
+                    />
+                </KeyboardAvoidingView>
+            </ThemedView>
         );
     }
 }
@@ -215,7 +217,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
-        backgroundColor: '#fff',
     },
     header: {
         fontSize: 24,

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	_ "embed"
-	"errors"
 	"fmt"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
@@ -87,7 +86,7 @@ func (p *dao) Get(ctx context.Context, project *models.Project) error {
 		return nil
 	}
 
-	return errors.New("project not found")
+	return fmt.Errorf("project not found (%+v)", project)
 }
 
 func (p *dao) List(ctx context.Context, params *ListParameters) ([]*models.Project, error) {

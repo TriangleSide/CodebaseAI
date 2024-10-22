@@ -1,5 +1,5 @@
 import React from 'react';
-import Projects from "@/projects/Projects";
+import Projects from "@/components/project/Projects";
 import { ScrollView } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 

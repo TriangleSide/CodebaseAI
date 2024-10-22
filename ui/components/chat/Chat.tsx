@@ -1,15 +1,15 @@
 import React from 'react';
 import { StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Input, Button } from 'react-native-elements';
-import ChatAPIClient, { Message } from "./ChatAPIClient";
+import ChatAPIClient, { Message } from "@/api/ChatAPIClient";
 import ChatCard from "./ChatCard";
-import { AmalgamSummary } from "@/amalgam/AmalgamSummary";
-import AmalgamAPIClient, { AmalgamResponse } from "../amalgam/AmalgamAPIClient";
-import { Roles } from "./Roles";
-import { Project } from "@/projects/ProjectAPIClient";
-import { RootState } from "@/state/Reducer";
-import { ProjectSummary } from "@/projects/ProjectSummary";
-import { connectToRootStore } from "@/state/Connect";
+import { AmalgamSummary } from "@/components/amalgam/AmalgamSummary";
+import AmalgamAPIClient, { AmalgamResponse } from "@/api/AmalgamAPIClient";
+import { Roles } from "@/api/ChatAPIClient";
+import { Project } from "@/api/ProjectAPIClient";
+import { RootState } from "@/state/store";
+import { ProjectSummary } from "@/components/project/ProjectSummary";
+import { connectToStore } from "@/state/connect";
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from "@/components/ThemedView";
 
@@ -17,11 +17,11 @@ interface StoreProps {
     selectedProject: Project | null;
 }
 
-const mapStoreToProps = (state: RootState): StoreProps => ({
-    selectedProject: state.project.selectedProject
-});
-
 interface OwnProps {}
+
+const mapStoreToProps = (state: RootState): StoreProps => ({
+    selectedProject: state.projects.selectedProject
+});
 
 type Props = OwnProps & StoreProps
 
@@ -173,6 +173,7 @@ class Chat extends React.Component<Props, State> {
         }
         amalgamMsg = ProjectSummary(this.props.selectedProject) + "\n\n" + amalgamMsg
 
+        // @ts-ignore
         return (
             <ThemedView>
                 <KeyboardAvoidingView
@@ -180,7 +181,7 @@ class Chat extends React.Component<Props, State> {
                     behavior={Platform.OS === "ios" ? "padding" : undefined}
                     keyboardVerticalOffset={60}
                 >
-                    <ThemedText style={styles.header}>Codebase AI Chat</ThemedText>
+                    <ThemedText type={"title"}>Codebase AI Chat</ThemedText>
                     <ThemedText style={styles.description}>This app adds the codebase amalgam to the beginning of the chat.</ThemedText>
                     <ScrollView
                         ref={this.chatScrollRef}
@@ -250,4 +251,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default connectToRootStore<OwnProps, StoreProps>(Chat, mapStoreToProps);
+export default connectToStore(Chat, mapStoreToProps);

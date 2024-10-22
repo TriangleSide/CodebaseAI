@@ -1,27 +1,27 @@
 import React from 'react';
-import {StyleSheet, View, Text, ScrollView} from 'react-native';
-import { Button } from 'react-native-elements';
-import AmalgamAPIClient, { AmalgamResponse } from "@/amalgam/AmalgamAPIClient";
-import { Project } from "@/projects/ProjectAPIClient";
-import { RootState } from "@/state/Reducer";
-import { connect, ConnectedProps } from "react-redux";
-import { AmalgamSummary } from "@/amalgam/AmalgamSummary";
-import { ProjectSummary } from "@/projects/ProjectSummary";
+import {StyleSheet} from 'react-native';
+import {Button, Divider} from 'react-native-elements';
+import AmalgamAPIClient, { AmalgamResponse } from "@/api/AmalgamAPIClient";
+import { Project } from "@/api/ProjectAPIClient";
+import { RootState } from "@/state/store";
+import { AmalgamSummary } from "@/components/amalgam/AmalgamSummary";
+import { ProjectSummary } from "@/components/project/ProjectSummary";
 import {ThemedView} from "@/components/ThemedView";
 import {ThemedText} from "@/components/ThemedText";
+import {connectToStore} from "@/state/connect";
 
-interface ReduxProps {
+interface StoreProps {
     selectedProject: Project | null;
 }
 
-const reduxMapStateToProps = (state: RootState): Partial<ReduxProps> => ({
-    selectedProject: state.project.selectedProject
+interface OwnProps {
+}
+
+const mapStoreToProps = (state: RootState): StoreProps => ({
+    selectedProject: state.projects.selectedProject
 });
 
-const reduxConnector = connect(reduxMapStateToProps);
-type ReduxConnectedProps = ConnectedProps<typeof reduxConnector>;
-
-interface Props extends ReduxConnectedProps {}
+type Props = OwnProps & StoreProps
 
 interface State {
     amalgam: AmalgamResponse | null;
@@ -45,6 +45,12 @@ class Amalgam extends React.Component<Props, State> {
         this.fetchAmalgamData();
     }
 
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
+        if (prevProps.selectedProject != this.props.selectedProject) {
+            this.fetchAmalgamData();
+        }
+    }
+
     fetchAmalgamData = async () => {
         this.setState({
             amalgam: null,
@@ -61,7 +67,6 @@ class Amalgam extends React.Component<Props, State> {
                 loading: false
             });
         } catch (err) {
-            console.error('Failed to fetch amalgam data:', err);
             if (err instanceof Error) {
                 this.setState({
                     error: err.message,
@@ -97,7 +102,6 @@ class Amalgam extends React.Component<Props, State> {
                 <ThemedText style={styles.error}>Error: {error}</ThemedText>
             );
         } else {
-            // @ts-ignore
             content = (
                 <ThemedView>
                     <Button
@@ -123,7 +127,10 @@ class Amalgam extends React.Component<Props, State> {
 
         return (
             <ThemedView style={styles.container}>
-                <ThemedText style={styles.header}>Amalgam Data</ThemedText>
+                <ThemedText type={"title"}>
+                    Amalgam Data
+                </ThemedText>
+                <Divider/>
                 {content}
             </ThemedView>
         );
@@ -134,11 +141,6 @@ const styles = StyleSheet.create({
     container: {
         padding: 16,
         flex: 1,
-    },
-    header: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 16,
     },
     primaryButton: {
     },
@@ -170,4 +172,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default reduxConnector(Amalgam);
+export default connectToStore(Amalgam, mapStoreToProps);

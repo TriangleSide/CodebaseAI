@@ -1,4 +1,4 @@
-import {AmalgamResponse} from "./AmalgamAPIClient";
+import {AmalgamResponse} from "@/api/AmalgamAPIClient";
 
 export function AmalgamSummary(amalgam: AmalgamResponse | null): string {
     if (!amalgam) {

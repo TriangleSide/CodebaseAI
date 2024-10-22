@@ -1,7 +1,14 @@
-import {Paths} from "@/api/Paths";
-import {ContentTypes} from "@/http/Headers";
-import {Methods} from "@/http/Methods";
-import {role} from "./Roles";
+import {Paths} from "@/constants/Paths";
+import {ContentTypes} from "@/constants/Headers";
+import {Methods} from "@/constants/Methods";
+
+export type role = string;
+
+export class Roles {
+    public static readonly USER: role = 'user';
+    public static readonly ASSISTANT: role = 'assistant';
+    public static readonly CODEBASE: role = 'codebase';
+}
 
 export interface Message {
     role: role;

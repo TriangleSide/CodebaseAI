@@ -1,4 +1,4 @@
-import {Paths} from "@/api/Paths";
+import {Paths} from "@/constants/Paths";
 
 export interface AmalgamResponse {
     content: string;

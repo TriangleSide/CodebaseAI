@@ -1,33 +1,37 @@
 import React from 'react';
-import { ProjectAPIClient, Project } from "./ProjectAPIClient";
-import {connect, ConnectedProps} from 'react-redux';
-import {RootState} from "@/state/Reducer";
-import {setSelectedProject} from "./SelectedProjectStore";
+import { ProjectAPIClient, Project } from "@/api/ProjectAPIClient";
 import { Dispatch } from 'redux';
+import {clearSelectedProject, setSelectedProject,} from "@/state/slices/project";
+import {RootState} from "@/state/store";
+import {connectToStore} from "@/state/connect";
 
-interface ReduxProps {
-    setSelectedProject: (project: Project | null) => void;
+interface DispatchProps {
+    setSelectedProject: (project: Project) => void;
+    clearSelectedProject: () => void;
 }
 
-const reduxMapStateToProps = (state: RootState): Partial<ReduxProps> => ({});
+interface StoreProps {}
 
-const reduxMapDispatchToProps = (dispatch: Dispatch): ReduxProps => ({
-    setSelectedProject: (project: Project | null) => dispatch(setSelectedProject(project))
-});
-
-const reduxConnector = connect(reduxMapStateToProps, reduxMapDispatchToProps);
-type reduxConnectedProps = ConnectedProps<typeof reduxConnector>;
-
-interface Props extends reduxConnectedProps {
+interface OwnProps {
     children?: React.ReactNode;
 }
+
+const mapStoreToProps = (state: RootState): StoreProps => ({
+    selectedProject: state.projects.selectedProject
+});
+
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+    setSelectedProject: (project: Project) => dispatch(setSelectedProject(project)),
+    clearSelectedProject: () => dispatch(clearSelectedProject()),
+});
+
+type Props = OwnProps & StoreProps & DispatchProps;
 
 interface State {
     project: Project | null;
     loading: boolean;
     error: string | null;
 }
-
 
 class SelectedProject extends React.Component<Props, State> {
     constructor(props: Props) {
@@ -50,23 +54,27 @@ class SelectedProject extends React.Component<Props, State> {
                 loading: true,
                 error: null,
             })
-            const listProjectsResponse = await ProjectAPIClient.list(1);
+            this.props.clearSelectedProject()
+            const listProjectsResponse = await ProjectAPIClient.list();
             const projects = listProjectsResponse.projects;
-            const selectedProject = projects.length > 0 ? projects[0] : null
-            this.props.setSelectedProject(selectedProject);
+            let selected: Project | null = null;
+            if (projects.length > 0) {
+                selected = projects[0]
+                this.props.setSelectedProject(selected)
+            }
             this.setState({
-                project: selectedProject,
+                project: selected,
                 loading: false,
                 error: null,
             });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-            this.props.setSelectedProject(null);
             this.setState({
                 project: null,
                 loading: false,
                 error: errorMessage,
             });
+            this.props.clearSelectedProject()
         }
     };
 
@@ -105,4 +113,4 @@ class SelectedProject extends React.Component<Props, State> {
     }
 }
 
-export default reduxConnector(SelectedProject);
+export default connectToStore(SelectedProject, mapStoreToProps, mapDispatchToProps);

@@ -1,6 +1,6 @@
-import {Paths} from "@/api/Paths";
-import {ContentTypes} from "@/http/Headers";
-import {Methods} from "@/http/Methods";
+import {Paths} from "@/constants/Paths";
+import {ContentTypes} from "@/constants/Headers";
+import {Methods} from "@/constants/Methods";
 
 export interface Project {
     id: number;

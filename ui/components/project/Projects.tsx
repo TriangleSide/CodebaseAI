@@ -4,35 +4,38 @@ import {
     ActivityIndicator,
     FlatList
 } from 'react-native';
-import { Button, ListItem } from 'react-native-elements';
-import AddProjectModal from '@/projects/AddProjectModal';
-import { ProjectAPIClient, Project } from "@/projects/ProjectAPIClient";
-import {RootState} from "@/state/Reducer";
+import { Button } from 'react-native-elements';
+import AddProjectModal from '@/components/project/AddProjectModal';
+import { ProjectAPIClient, Project } from "@/api/ProjectAPIClient";
+import {RootState} from "@/state/store";
 import {Dispatch} from "redux";
-import {clearSelectedProject, setSelectedProject} from "@/projects/SelectedProjectStore";
-import {connect, ConnectedProps} from "react-redux";
+import {clearSelectedProject, setSelectedProject} from "@/state/slices/project";
 import ThemedListItem from "react-native-elements/dist/list/ListItem";
 import {ThemedView} from "@/components/ThemedView";
 import {ThemedText} from "@/components/ThemedText";
+import {connectToStore} from "@/state/connect";
 
-interface ReduxProps {
-    setSelectedProject: (project: Project | null) => void;
+interface DispatchProps {
+    setSelectedProject: (project: Project) => void;
     clearSelectedProject: () => void;
 }
 
-const reduxMapStateToProps = (state: RootState): Partial<ReduxProps> => ({});
+interface StoreProps {}
 
-const reduxMapDispatchToProps = (dispatch: Dispatch): ReduxProps => ({
-    setSelectedProject: (project: Project | null) => dispatch(setSelectedProject(project)),
+interface OwnProps {
+    children?: React.ReactNode;
+}
+
+const mapStoreToProps = (state: RootState): StoreProps => ({
+    selectedProject: state.projects.selectedProject
+});
+
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+    setSelectedProject: (project: Project) => dispatch(setSelectedProject(project)),
     clearSelectedProject: () => dispatch(clearSelectedProject()),
 });
 
-const reduxConnector = connect(reduxMapStateToProps, reduxMapDispatchToProps);
-type reduxConnectedProps = ConnectedProps<typeof reduxConnector>;
-
-interface Props extends reduxConnectedProps {
-    children?: React.ReactNode;
-}
+type Props = OwnProps & StoreProps & DispatchProps
 
 interface State {
     projects: Project[];
@@ -255,4 +258,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default reduxConnector(Projects);
+export default connectToStore(Projects, mapStoreToProps, mapDispatchToProps);

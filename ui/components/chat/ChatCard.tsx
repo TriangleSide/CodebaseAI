@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import Markdown from 'react-native-markdown-display';
-import { Roles, role } from './Roles';
+import { role, Roles } from '@/api/ChatAPIClient';
 import ThemedCard from "react-native-elements/dist/card/Card";
 
 interface Props {

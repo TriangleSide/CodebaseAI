@@ -1,4 +1,4 @@
-import {Project} from "./ProjectAPIClient";
+import {Project} from "@/api/ProjectAPIClient";
 
 export function ProjectSummary(project: Project | null | undefined): string {
     if (!project) {

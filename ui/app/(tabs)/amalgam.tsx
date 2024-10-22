@@ -1,8 +1,8 @@
 import React from 'react';
-import Amalgam from "@/amalgam/Amalgam";
+import Amalgam from "@/components/amalgam/Amalgam";
 import {ThemedView} from "@/components/ThemedView";
 import {ScrollView} from "react-native";
-import SelectedProject from "@/projects/SelectedProject";
+import SelectedProject from "@/components/project/SelectedProject";
 
 interface Props {}
 interface State {}

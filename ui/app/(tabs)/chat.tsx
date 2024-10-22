@@ -1,6 +1,6 @@
 import React from 'react';
-import Chat from "@/chat/Chat";
-import SelectedProject from "@/projects/SelectedProject";
+import Chat from "@/components/chat/Chat";
+import SelectedProject from "@/components/project/SelectedProject";
 import {ThemedView} from "@/components/ThemedView";
 import {ScrollView} from "react-native";
 

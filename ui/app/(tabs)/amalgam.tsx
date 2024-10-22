@@ -4,10 +4,10 @@ import ThemedView from "@/components/themed/ThemedView";
 import {ScrollView} from "react-native";
 import SelectedProject from "@/components/project/SelectedProject";
 
-export default function  AmalgamScreen(): React.ReactNode {
+export default function AmalgamScreen(): React.ReactNode {
     return (
         <ScrollView>
-            <ThemedView>
+            <ThemedView center={true}>
                 <SelectedProject>
                     <Amalgam />
                 </SelectedProject>

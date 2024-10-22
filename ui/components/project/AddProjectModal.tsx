@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { Overlay, Button, Input } from 'react-native-elements';
+import { Button } from 'react-native-elements';
 import ThemedText from "@/components/themed/ThemedText";
 import ThemedView from "@/components/themed/ThemedView";
+import ThemedOverlay from "@/components/themed/ThemedOverlay";
+import ThemedInput from "@/components/themed/ThemedInput";
 
 interface Props {
     show: boolean;
@@ -23,7 +25,7 @@ const AddProjectModal: React.FC<Props> = ({ show, onHide, onAddProject }) => {
     };
 
     return (
-        <Overlay
+        <ThemedOverlay
             isVisible={show}
             onBackdropPress={onHide}
             overlayStyle={styles.overlay}
@@ -31,7 +33,7 @@ const AddProjectModal: React.FC<Props> = ({ show, onHide, onAddProject }) => {
             <ThemedText style={styles.title}>
                 Add New Project
             </ThemedText>
-            <Input
+            <ThemedInput
                 label="Project Path"
                 placeholder="Enter project path"
                 value={projectPath}
@@ -54,26 +56,23 @@ const AddProjectModal: React.FC<Props> = ({ show, onHide, onAddProject }) => {
                     titleStyle={styles.buttonTitle}
                 />
             </ThemedView>
-        </Overlay>
+        </ThemedOverlay>
     );
 };
 
 const styles = StyleSheet.create({
     overlay: {
-        backgroundColor: '#000',
         padding: 20,
         borderRadius: 10,
     },
     title: {
-        color: '#fff',
         textAlign: 'center',
         marginBottom: 20,
     },
     input: {
-        color: '#fff',
     },
     label: {
-        color: '#fff',
+        marginBottom: 5,
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -82,10 +81,8 @@ const styles = StyleSheet.create({
     },
     button: {
         width: 120,
-        backgroundColor: '#1e90ff',
     },
     buttonTitle: {
-        color: '#fff',
     },
 });
 

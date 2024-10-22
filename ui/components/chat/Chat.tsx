@@ -11,6 +11,7 @@ import ThemedText from "@/components/themed/ThemedText";
 import ThemedView from "@/components/themed/ThemedView";
 import { useStoreSelector } from "@/state/store";
 import { selectSelectedProject } from "@/state/slices/project";
+import ThemedInput from "@/components/themed/ThemedInput";
 
 interface Props {}
 
@@ -105,7 +106,7 @@ const Chat: React.FC<Props> = () => {
                 keyboardVerticalOffset={60}
             >
                 <ThemedText type={"title"}>Codebase AI Chat</ThemedText>
-                <ThemedText style={styles.description}>This app adds the codebase amalgam to the beginning of the chat.</ThemedText>
+                <ThemedText style={styles.description}>This adds the codebase amalgam to the beginning of the chat.</ThemedText>
                 <ScrollView
                     ref={chatScrollRef}
                     style={styles.chatContainer}
@@ -116,7 +117,7 @@ const Chat: React.FC<Props> = () => {
                         <ChatCard key={index} role={msg.role} content={msg.content} />
                     ))}
                 </ScrollView>
-                <Input
+                <ThemedInput
                     placeholder="Chat with AI about your codebase..."
                     value={input}
                     onChangeText={setInput}

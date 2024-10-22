@@ -11,6 +11,7 @@ import { useStoreDispatch } from "@/state/store";
 import { clearSelectedProject, setSelectedProject } from "@/state/slices/project";
 import ThemedView from "@/components/themed/ThemedView";
 import ThemedText from "@/components/themed/ThemedText";
+import ThemedListItem from "@/components/themed/ThemedListItem";
 
 interface OwnProps {
     children?: React.ReactNode;
@@ -104,13 +105,15 @@ const Projects: React.FC<OwnProps> = ({ children }) => {
     };
 
     const renderItem = ({ item }: { item: Project }) => (
-        <ListItem
+        <ThemedListItem
             bottomDivider
             onPress={() => handleSelect(item)}
-            containerStyle={item.id === selectedProjectId ? styles.activeItem : styles.item}
+            selected={item.id === selectedProjectId}
         >
             <ListItem.Content>
-                <ListItem.Title>{item.path}</ListItem.Title>
+                <ListItem.Title>
+                    <ThemedText>{item.path}</ThemedText>
+                </ListItem.Title>
             </ListItem.Content>
             <Button
                 title="Delete"
@@ -118,7 +121,7 @@ const Projects: React.FC<OwnProps> = ({ children }) => {
                 titleStyle={{ color: 'red' }}
                 onPress={() => deleteProject(item)}
             />
-        </ListItem>
+        </ThemedListItem>
     );
 
     return (
@@ -189,10 +192,6 @@ const styles = StyleSheet.create({
     selectText: {
         fontSize: 16,
         marginBottom: 8,
-    },
-    item: {},
-    activeItem: {
-        backgroundColor: "#123123"
     },
 });
 

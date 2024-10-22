@@ -3,6 +3,9 @@ import { StyleSheet } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { role, Roles } from '@/api/ChatAPIClient';
 import { Card } from 'react-native-elements';
+import ThemedText from "@/components/themed/ThemedText";
+import ThemedCard from "@/components/themed/ThemedCard";
+import Theme from "@/state/slices/theme";
 
 interface Props {
     role: role;
@@ -12,6 +15,7 @@ interface Props {
 const ChatCard: React.FC<Props> = ({ role, content }) => {
     let cardStyle = styles.card;
     let user: string;
+    let useMarkdown: boolean = false;
 
     switch (role) {
         case Roles.USER:
@@ -21,6 +25,7 @@ const ChatCard: React.FC<Props> = ({ role, content }) => {
         case Roles.ASSISTANT:
             user = "AI";
             cardStyle = { ...styles.card, ...styles.assistantCard };
+            useMarkdown = true;
             break;
         case Roles.CODEBASE:
             user = "Codebase";
@@ -31,12 +36,13 @@ const ChatCard: React.FC<Props> = ({ role, content }) => {
     }
 
     return (
-        // @ts-ignore
-        <Card containerStyle={cardStyle}>
-            <Card.Title>{user}</Card.Title>
+        <ThemedCard containerStyle={cardStyle}>
+            <Card.Title>
+                <ThemedText>{user}</ThemedText>
+            </Card.Title>
             <Card.Divider />
-            <Markdown>{content}</Markdown>
-        </Card>
+            {useMarkdown? <Markdown>{content}</Markdown> : <ThemedText>{content}</ThemedText>}
+        </ThemedCard>
     );
 };
 
@@ -45,7 +51,6 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         borderRadius: 8,
         padding: 15,
-        backgroundColor: '#333',
         borderWidth: 5,
     },
     userCard: {

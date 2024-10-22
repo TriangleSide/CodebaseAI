@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, type TextProps, StyleSheet } from 'react-native';
-import { componentColor } from '@/hooks/useThemeColor';
+import componentColor from '@/hooks/componentColor';
 
 export const TEXT_TYPES = {
     DEFAULT: 'default',

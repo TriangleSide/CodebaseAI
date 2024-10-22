@@ -6,7 +6,7 @@ import ThemedView from "@/components/themed/ThemedView";
 export default function ProjectsScreen(): React.ReactNode {
     return (
         <ScrollView>
-            <ThemedView>
+            <ThemedView center={true}>
                 <Projects />
             </ThemedView>
         </ScrollView>

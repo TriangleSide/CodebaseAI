@@ -6,6 +6,7 @@ import { Card } from 'react-native-elements';
 import ThemedText from "@/components/themed/ThemedText";
 import ThemedCard from "@/components/themed/ThemedCard";
 import Theme from "@/state/slices/theme";
+import ThemedCardDivider from "@/components/themed/ThemedCardDivider";
 
 interface Props {
     role: role;
@@ -40,7 +41,7 @@ const ChatCard: React.FC<Props> = ({ role, content }) => {
             <Card.Title>
                 <ThemedText>{user}</ThemedText>
             </Card.Title>
-            <Card.Divider />
+            <ThemedCardDivider/>
             {useMarkdown? <Markdown>{content}</Markdown> : <ThemedText>{content}</ThemedText>}
         </ThemedCard>
     );

@@ -159,6 +159,8 @@ const styles = StyleSheet.create({
     input: {
         minHeight: 60,
         textAlignVertical: 'top',
+        borderWidth: 3,
+        padding: 5,
     },
     button: {
         backgroundColor: '#2089dc',

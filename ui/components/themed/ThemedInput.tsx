@@ -5,7 +5,8 @@ import {Input, InputProps} from "react-native-elements";
 export default function ThemedInput(props: InputProps): React.ReactNode {
     const { inputStyle, ...rest } = props;
     const color = componentColor('text');
+    const borderColor = componentColor('listItemBorder')
     return (
-        <Input inputStyle={[{ color }, inputStyle]} {...rest} />
+        <Input inputStyle={[{ color, borderColor }, inputStyle]} {...rest} />
     )
 }

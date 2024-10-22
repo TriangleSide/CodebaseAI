@@ -70,6 +70,8 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     input: {
+        borderWidth: 3,
+        padding: 5,
     },
     label: {
         marginBottom: 5,

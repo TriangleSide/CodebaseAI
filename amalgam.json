@@ -1,6 +1,6 @@
 {
   "allowedExactFiles": ["Makefile"],
   "allowedSuffix": [".go", ".md", ".ts", ".tsx", ".html", ".css", ".sql", ".proto", ".cpp", ".cc", ".c", ".h"],
-  "disallowedExactPaths": ["bin", "node_modules"],
+  "disallowedExactPaths": ["bin", "node_modules", ".expo"],
   "disallowedSuffix": ["coverage.html", "_test.go"]
 }

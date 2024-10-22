@@ -1,223 +1,162 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     ActivityIndicator,
     FlatList
 } from 'react-native';
-import { Button } from 'react-native-elements';
+import { Button, ListItem } from 'react-native-elements';
 import AddProjectModal from '@/components/project/AddProjectModal';
 import { ProjectAPIClient, Project } from "@/api/ProjectAPIClient";
-import {RootState} from "@/state/store";
-import {Dispatch} from "redux";
-import {clearSelectedProject, setSelectedProject} from "@/state/slices/project";
-import ThemedListItem from "react-native-elements/dist/list/ListItem";
-import {ThemedView} from "@/components/ThemedView";
-import {ThemedText} from "@/components/ThemedText";
-import {connectToStore} from "@/state/connect";
-
-interface DispatchProps {
-    setSelectedProject: (project: Project) => void;
-    clearSelectedProject: () => void;
-}
-
-interface StoreProps {}
+import { useStoreDispatch } from "@/state/store";
+import { clearSelectedProject, setSelectedProject } from "@/state/slices/project";
+import ThemedView from "@/components/themed/ThemedView";
+import ThemedText from "@/components/themed/ThemedText";
 
 interface OwnProps {
     children?: React.ReactNode;
 }
 
-const mapStoreToProps = (state: RootState): StoreProps => ({
-    selectedProject: state.projects.selectedProject
-});
+const Projects: React.FC<OwnProps> = ({ children }) => {
+    const dispatch = useStoreDispatch();
 
-const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
-    setSelectedProject: (project: Project) => dispatch(setSelectedProject(project)),
-    clearSelectedProject: () => dispatch(clearSelectedProject()),
-});
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>();
 
-type Props = OwnProps & StoreProps & DispatchProps
-
-interface State {
-    projects: Project[];
-    loading: boolean;
-    error: string | null;
-    showModal: boolean;
-    selectedProjectId?: number;
-}
-
-class Projects extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        this.state = {
-            projects: [],
-            loading: true,
-            error: '',
-            showModal: false,
-            selectedProjectId: undefined,
-        };
-    }
-
-    componentDidMount() {
-        this.fetchProjects();
-    }
-
-    fetchProjects = async () => {
+    const fetchProjects = async () => {
         try {
-            this.setState({
-                loading: true,
-                projects: [],
-                error: null,
-                selectedProjectId: undefined,
-            });
-            this.props.clearSelectedProject()
+            setLoading(true);
+            setError(null);
+            setSelectedProjectId(undefined);
+            dispatch(clearSelectedProject());
+
             const listProjectsResponse = await ProjectAPIClient.list();
-            const projects = listProjectsResponse.projects;
-            let selectedId: number | undefined = undefined
-            if (projects.length > 0) {
-                selectedId = projects[0].id;
-                this.props.setSelectedProject({
-                    id: projects[0].id,
-                    path: projects[0].path,
-                })
+            const fetchedProjects = listProjectsResponse.projects;
+            let selectedId: number | undefined = undefined;
+
+            if (fetchedProjects.length > 0) {
+                selectedId = fetchedProjects[0].id;
+                dispatch(setSelectedProject({
+                    id: fetchedProjects[0].id,
+                    path: fetchedProjects[0].path,
+                }));
             }
-            const sortedProjects = projects.sort((a, b) => a.path.localeCompare(b.path));
-            this.setState({
-                projects: sortedProjects,
-                loading: false,
-                error: null,
-                selectedProjectId: selectedId
-            });
+
+            const sortedProjects = fetchedProjects.sort((a, b) => a.path.localeCompare(b.path));
+            setProjects(sortedProjects);
+            setSelectedProjectId(selectedId);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-            this.setState({
-                error: errorMessage,
-                projects: [],
-                loading: false,
-                selectedProjectId: undefined,
-            });
-            this.props.clearSelectedProject()
+            setError(errorMessage);
+            setSelectedProjectId(undefined);
+            dispatch(clearSelectedProject());
+        } finally {
+            setLoading(false);
         }
     };
 
-    handleAddProject = async (projectPath: string) => {
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    const handleAddProject = async (projectPath: string) => {
         try {
-            this.setState({
-                loading: true,
-                projects: [],
-                error: null,
-                selectedProjectId: undefined,
-            });
+            setLoading(true);
+            setProjects([]);
+            setError(null);
+            setSelectedProjectId(undefined);
+
             await ProjectAPIClient.create(projectPath);
-            await this.fetchProjects();
+            await fetchProjects();
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An error occurred while adding the project';
-            this.setState({
-                error: errorMessage,
-                projects: [],
-                loading: false,
-                selectedProjectId: undefined,
-            });
+            setError(errorMessage);
+            setLoading(false);
         }
     };
 
-    toggleModal = () => {
-        this.setState(prevState => ({ showModal: !prevState.showModal }));
+    const toggleModal = () => {
+        setShowModal(prevState => !prevState);
     };
 
-    deleteProject = async (project: Project) => {
+    const deleteProject = async (project: Project) => {
         try {
-            this.setState({
-                loading: true,
-                projects: [],
-                error: null,
-                selectedProjectId: undefined,
-            });
+            setLoading(true);
             await ProjectAPIClient.delete(project.id);
-            await this.fetchProjects();
+            await fetchProjects();
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to delete the project';
-            this.setState({
-                error: errorMessage,
-                projects: [],
-                loading: false,
-                selectedProjectId: undefined,
-            });
+            setError(errorMessage);
+            setLoading(false);
         }
     };
 
-    handleSelect = async (project: Project) => {
-        this.setState({
-            selectedProjectId: project.id
-        });
+    const handleSelect = async (project: Project) => {
+        setSelectedProjectId(project.id);
         try {
             await ProjectAPIClient.update(project.id);
-            this.props.setSelectedProject(project);
+            dispatch(setSelectedProject(project));
         } catch (err) {
             console.error("Failed to update project", project, err);
         }
     };
 
-    renderItem = ({ item }: { item: Project }) => {
-        const { selectedProjectId } = this.state;
-        return (
-            <ThemedListItem
-                bottomDivider
-                onPress={() => this.handleSelect(item!)}
-                containerStyle={item.id === selectedProjectId ? styles.activeItem : styles.item}
-            >
-                <ThemedListItem.Content>
-                    <ThemedListItem.Title>{item.path}</ThemedListItem.Title>
-                </ThemedListItem.Content>
-                <Button
-                    title="Delete"
-                    type="clear"
-                    titleStyle={{ color: 'red' }}
-                    onPress={() => this.deleteProject(item!)}
-                />
-            </ThemedListItem>
-        );
-    };
+    const renderItem = ({ item }: { item: Project }) => (
+        <ListItem
+            bottomDivider
+            onPress={() => handleSelect(item)}
+            containerStyle={item.id === selectedProjectId ? styles.activeItem : styles.item}
+        >
+            <ListItem.Content>
+                <ListItem.Title>{item.path}</ListItem.Title>
+            </ListItem.Content>
+            <Button
+                title="Delete"
+                type="clear"
+                titleStyle={{ color: 'red' }}
+                onPress={() => deleteProject(item)}
+            />
+        </ListItem>
+    );
 
-    render() {
-        const { projects, loading, error, showModal, selectedProjectId } = this.state;
-
-        return (
-            <ThemedView style={styles.container}>
-                <ThemedText style={styles.header}>Projects</ThemedText>
-                <ThemedText style={styles.description}>
-                    These are the absolute paths to the roots of your projects.
-                </ThemedText>
-                <Button
-                    title="Add New Project"
-                    onPress={this.toggleModal}
-                    buttonStyle={styles.addButton}
-                />
-                {loading ? (
-                    <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
-                ) : error ? (
-                    <ThemedText style={styles.errorText}>{error}</ThemedText>
-                ) : (
-                    <ThemedView style={styles.listContainer}>
-                        {projects.length > 0 && (
-                            <ThemedText style={styles.selectText}>Select a project below.</ThemedText>
-                        )}
-                        <FlatList
-                            data={projects}
-                            keyExtractor={(item) => item.id!.toString()}
-                            renderItem={this.renderItem}
-                        />
-                        {this.props.children}
-                    </ThemedView>
-                )}
-                <AddProjectModal
-                    show={showModal}
-                    onHide={this.toggleModal}
-                    onAddProject={this.handleAddProject}
-                />
-            </ThemedView>
-        );
-    }
-}
+    return (
+        <ThemedView style={styles.container}>
+            <ThemedText style={styles.header}>Projects</ThemedText>
+            <ThemedText style={styles.description}>
+                These are the absolute paths to the roots of your projects.
+            </ThemedText>
+            <Button
+                title="Add New Project"
+                onPress={toggleModal}
+                buttonStyle={styles.addButton}
+            />
+            {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+            ) : error ? (
+                <ThemedText style={styles.errorText}>{error}</ThemedText>
+            ) : (
+                <ThemedView style={styles.listContainer}>
+                    {projects.length > 0 && (
+                        <ThemedText style={styles.selectText}>Select a project below.</ThemedText>
+                    )}
+                    <FlatList
+                        data={projects}
+                        keyExtractor={(item) => item.id!.toString()}
+                        renderItem={renderItem}
+                    />
+                    {children}
+                </ThemedView>
+            )}
+            <AddProjectModal
+                show={showModal}
+                onHide={toggleModal}
+                onAddProject={handleAddProject}
+            />
+        </ThemedView>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -251,11 +190,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 8,
     },
-    item: {
-    },
+    item: {},
     activeItem: {
         backgroundColor: "#123123"
     },
 });
 
-export default connectToStore<OwnProps, StoreProps, DispatchProps>(Projects, mapStoreToProps, mapDispatchToProps);
+export default Projects;

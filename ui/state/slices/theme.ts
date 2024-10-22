@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {createSelector} from "reselect";
 
 export type Theme = 'dark' | 'light' | null;
 
@@ -19,6 +20,11 @@ const slice = createSlice({
         },
     },
 });
+
+export const selectTheme = createSelector(
+    (state: { theme: ThemeState }) => state.theme,
+    (themeState) => themeState.theme
+);
 
 export const { setTheme } = slice.actions;
 export default slice.reducer;

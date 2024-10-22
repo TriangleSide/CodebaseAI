@@ -1,6 +1,8 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Overlay, Button, Input, Text } from 'react-native-elements';
+import React, { useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { Overlay, Button, Input } from 'react-native-elements';
+import ThemedText from "@/components/themed/ThemedText";
+import ThemedView from "@/components/themed/ThemedView";
 
 interface Props {
     show: boolean;
@@ -8,62 +10,53 @@ interface Props {
     onAddProject: (path: string) => void;
 }
 
-interface State {
-    projectPath: string;
-}
+const AddProjectModal: React.FC<Props> = ({ show, onHide, onAddProject }) => {
+    const [projectPath, setProjectPath] = useState<string>('');
 
-export default class AddProjectModal extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        this.state = { projectPath: '' };
-    }
-
-    handleSubmit = () => {
-        this.props.onAddProject(this.state.projectPath);
-        this.props.onHide();
+    const handleSubmit = () => {
+        onAddProject(projectPath);
+        onHide();
     };
 
-    handleProjectPathChange = (value: string) => {
-        this.setState({ projectPath: value });
+    const handleProjectPathChange = (value: string) => {
+        setProjectPath(value);
     };
 
-    render() {
-        return (
-            <Overlay
-                isVisible={this.props.show}
-                onBackdropPress={this.props.onHide}
-                overlayStyle={styles.overlay}
-            >
-                <Text h4 style={styles.title}>
-                    Add New Project
-                </Text>
-                <Input
-                    label="Project Path"
-                    placeholder="Enter project path"
-                    value={this.state.projectPath}
-                    onChangeText={this.handleProjectPathChange}
-                    inputStyle={styles.input}
-                    labelStyle={styles.label}
+    return (
+        <Overlay
+            isVisible={show}
+            onBackdropPress={onHide}
+            overlayStyle={styles.overlay}
+        >
+            <ThemedText style={styles.title}>
+                Add New Project
+            </ThemedText>
+            <Input
+                label="Project Path"
+                placeholder="Enter project path"
+                value={projectPath}
+                onChangeText={handleProjectPathChange}
+                inputStyle={styles.input}
+                labelStyle={styles.label}
+            />
+            <ThemedView style={styles.buttonContainer}>
+                <Button
+                    title="Close"
+                    type="outline"
+                    onPress={onHide}
+                    buttonStyle={styles.button}
+                    titleStyle={styles.buttonTitle}
                 />
-                <View style={styles.buttonContainer}>
-                    <Button
-                        title="Close"
-                        type="outline"
-                        onPress={this.props.onHide}
-                        buttonStyle={styles.button}
-                        titleStyle={styles.buttonTitle}
-                    />
-                    <Button
-                        title="Add Project"
-                        onPress={this.handleSubmit}
-                        buttonStyle={styles.button}
-                        titleStyle={styles.buttonTitle}
-                    />
-                </View>
-            </Overlay>
-        );
-    }
-}
+                <Button
+                    title="Add Project"
+                    onPress={handleSubmit}
+                    buttonStyle={styles.button}
+                    titleStyle={styles.buttonTitle}
+                />
+            </ThemedView>
+        </Overlay>
+    );
+};
 
 const styles = StyleSheet.create({
     overlay: {
@@ -95,3 +88,5 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
 });
+
+export default AddProjectModal;

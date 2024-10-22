@@ -2,51 +2,43 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { role, Roles } from '@/api/ChatAPIClient';
-import ThemedCard from "react-native-elements/dist/card/Card";
+import { Card } from 'react-native-elements';
 
 interface Props {
     role: role;
     content: string;
 }
 
-class ChatCard extends React.Component<Props> {
-    render() {
-        const { role, content } = this.props;
+const ChatCard: React.FC<Props> = ({ role, content }) => {
+    let cardStyle = styles.card;
+    let user: string;
 
-        let cardStyle = styles.card;
-        let user: string;
-
-        switch (role) {
-            case Roles.USER:
-                user = "User";
-                cardStyle = { ...styles.card, ...styles.userCard };
-                break;
-            case Roles.ASSISTANT:
-                user = "AI";
-                cardStyle = { ...styles.card, ...styles.assistantCard };
-                break;
-            case Roles.CODEBASE:
-                user = "Codebase";
-                cardStyle = { ...styles.card, ...styles.codebaseCard };
-                break;
-            default:
-                throw new Error("Unknown role.");
-        }
-
-        let children: any[];
-
-        return (
-            // @ts-ignore
-            <ThemedCard containerStyle={cardStyle}>
-                <ThemedCard.Title>{user}</ThemedCard.Title>
-                <ThemedCard.Divider />
-                <Markdown>
-                    {content}
-                </Markdown>
-            </ThemedCard>
-        );
+    switch (role) {
+        case Roles.USER:
+            user = "User";
+            cardStyle = { ...styles.card, ...styles.userCard };
+            break;
+        case Roles.ASSISTANT:
+            user = "AI";
+            cardStyle = { ...styles.card, ...styles.assistantCard };
+            break;
+        case Roles.CODEBASE:
+            user = "Codebase";
+            cardStyle = { ...styles.card, ...styles.codebaseCard };
+            break;
+        default:
+            throw new Error("Unknown role.");
     }
-}
+
+    return (
+        // @ts-ignore
+        <Card containerStyle={cardStyle}>
+            <Card.Title>{user}</Card.Title>
+            <Card.Divider />
+            <Markdown>{content}</Markdown>
+        </Card>
+    );
+};
 
 const styles = StyleSheet.create({
     card: {

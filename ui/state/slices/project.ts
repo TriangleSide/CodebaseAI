@@ -1,5 +1,6 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Project} from "@/api/ProjectAPIClient";
+import {createSelector} from "reselect";
 
 export interface ProjectState {
     selectedProject: Project | null;
@@ -10,7 +11,7 @@ const initialState: ProjectState = {
 }
 
 const slice = createSlice({
-    name: 'project',
+    name: 'projects',
     initialState: initialState,
     reducers: {
         setSelectedProject: (state: ProjectState, action: PayloadAction<Project>): void => {
@@ -21,6 +22,11 @@ const slice = createSlice({
         },
     },
 });
+
+export const selectSelectedProject = createSelector(
+    (state: { projects: ProjectState }) => state.projects,
+    (projectState) => projectState.selectedProject
+);
 
 export const { clearSelectedProject, setSelectedProject } = slice.actions;
 export default slice.reducer;

@@ -1,228 +1,145 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Input, Button } from 'react-native-elements';
 import ChatAPIClient, { Message } from "@/api/ChatAPIClient";
 import ChatCard from "./ChatCard";
-import { AmalgamSummary } from "@/components/amalgam/AmalgamSummary";
+import { amalgamSummary } from "@/components/amalgam/summary";
 import AmalgamAPIClient, { AmalgamResponse } from "@/api/AmalgamAPIClient";
 import { Roles } from "@/api/ChatAPIClient";
-import { Project } from "@/api/ProjectAPIClient";
-import { RootState } from "@/state/store";
-import { ProjectSummary } from "@/components/project/ProjectSummary";
-import { connectToStore } from "@/state/connect";
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from "@/components/ThemedView";
+import { projectSummary } from "@/components/project/summary";
+import ThemedText from "@/components/themed/ThemedText";
+import ThemedView from "@/components/themed/ThemedView";
+import { useStoreSelector } from "@/state/store";
+import { selectSelectedProject } from "@/state/slices/project";
 
-interface StoreProps {
-    selectedProject: Project | null;
-}
+interface Props {}
 
-interface OwnProps {}
+const Chat: React.FC<Props> = () => {
+    const chatScrollRef = useRef<ScrollView>(null);
+    const selectedProject = useStoreSelector(selectSelectedProject);
 
-const mapStoreToProps = (state: RootState): StoreProps => ({
-    selectedProject: state.projects.selectedProject
-});
+    const [amalgamError, setAmalgamError] = useState<string | null>(null);
+    const [amalgamLoading, setAmalgamLoading] = useState(true);
+    const [amalgamData, setAmalgamData] = useState<AmalgamResponse | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [input, setInput] = useState('');
+    const [loading, setLoading] = useState(false);
 
-type Props = OwnProps & StoreProps
-
-interface State {
-    amalgamError: string | null;
-    amalgamLoading: boolean;
-    amalgamData: AmalgamResponse | null;
-    messages: Message[];
-    input: string;
-    loading: boolean;
-}
-
-class Chat extends React.Component<Props, State> {
-    chatScrollRef: React.RefObject<ScrollView>;
-
-    constructor(props: Props) {
-        super(props);
-        this.state = this.emptyState();
-        this.chatScrollRef = React.createRef();
-    }
-
-    emptyState(): State {
-        return {
-            amalgamError: null,
-            amalgamLoading: true,
-            amalgamData: null,
-            messages: [],
-            input: '',
-            loading: false,
-        }
-    }
-
-    componentDidMount() {
-        this.fetchAmalgamData();
-    }
-
-    componentDidUpdate(prevProps: Props) {
-        if (this.props.selectedProject?.id !== prevProps.selectedProject?.id) {
-            this.setState(this.emptyState());
-            this.fetchAmalgamData();
-        }
-        if (this.chatScrollRef.current) {
-            this.chatScrollRef.current.scrollToEnd({ animated: true });
-        }
-    }
-
-    fetchAmalgamData = async () => {
-        this.setState({
-            amalgamError: null,
-            amalgamData: null,
-            amalgamLoading: true,
-        });
+    const fetchAmalgamData = async () => {
+        setAmalgamError(null);
+        setAmalgamData(null);
+        setAmalgamLoading(true);
         try {
-            if (!this.props.selectedProject) {
+            if (!selectedProject) {
                 throw new Error('Project not found');
             }
-            const data = await AmalgamAPIClient.fetchAmalgam(this.props.selectedProject.id);
-            this.setState({
-                amalgamError: null,
-                amalgamData: data,
-                amalgamLoading: false,
-            });
+            const data = await AmalgamAPIClient.fetchAmalgam(selectedProject.id);
+            setAmalgamData(data);
+            setAmalgamLoading(false);
         } catch (err) {
             console.error('Failed to fetch amalgam data:', err);
-            this.setState({
-                amalgamError: 'Error fetching amalgam data',
-                amalgamData: null,
-                amalgamLoading: false,
-            });
+            setAmalgamError('Error fetching amalgam data');
+            setAmalgamLoading(false);
         }
     };
 
-    handleSendMessage = async () => {
-        if (this.state.input.trim() === '') return;
+    useEffect(() => {
+        fetchAmalgamData();
+    }, [selectedProject?.id]);
 
-        let messages: Message[] = this.state.messages;
-        messages = [...messages, { role: Roles.USER, content: this.state.input.trim() }];
-        messages = [...messages, { role: Roles.ASSISTANT, content: "" }];
+    useEffect(() => {
+        if (chatScrollRef.current) {
+            chatScrollRef.current.scrollToEnd({ animated: true });
+        }
+    }, [messages]);
 
-        this.setState({
-            messages: messages,
-            input: '',
-            loading: true,
-        });
+    const handleSendMessage = async () => {
+        if (input.trim() === '') return;
+
+        let updatedMessages = [...messages, { role: Roles.USER, content: input.trim() }, { role: Roles.ASSISTANT, content: "" }];
+        setMessages(updatedMessages);
+        setInput('');
+        setLoading(true);
 
         const tokenCallback = (token: string) => {
-            this.setState((prevState: State) => {
-                const updatedMessages: Message[] = [...prevState.messages];
-                const lastMessage: Message = updatedMessages[updatedMessages.length - 1];
-
+            setMessages((prevMessages) => {
+                const lastMessage = { ...prevMessages[prevMessages.length - 1] };
                 if (lastMessage.role === Roles.ASSISTANT) {
                     lastMessage.content += token;
-                } else {
-                    updatedMessages.push({ role: Roles.ASSISTANT, content: token });
                 }
-
-                return {
-                    messages: updatedMessages,
-                };
+                return [...prevMessages.slice(0, -1), lastMessage];
             });
         };
 
         try {
-            const apiRequestMessages: Message[] = messages.map(msg => ({
-                role: msg.role,
-                content: msg.content
-            } as Message));
-
-            apiRequestMessages[0].content = this.state.amalgamData?.content + "// User request below.\n\n" + apiRequestMessages[0].content;
+            const apiRequestMessages = updatedMessages.map(msg => ({ role: msg.role, content: msg.content }));
+            apiRequestMessages[0].content = amalgamData?.content + "// User request below.\n\n" + apiRequestMessages[0].content;
 
             await ChatAPIClient.sendMessage(apiRequestMessages, tokenCallback);
-            this.setState({ loading: false });
+            setLoading(false);
         } catch (error) {
-            this.setState((prevState) => ({
-                loading: false,
-                messages: [...prevState.messages, { role: Roles.ASSISTANT, content: 'Error: ' + error }],
-            }));
+            setMessages((prevMessages) => [...prevMessages, { role: Roles.ASSISTANT, content: 'Error: ' + error }]);
+            setLoading(false);
         }
     };
 
-    handleInputChange = (value: string) => {
-        this.setState({ input: value });
-    };
-
-    handleKeyPress = ({ nativeEvent }: any) => {
-        if (nativeEvent.key === 'Enter') {
-            this.handleSendMessage();
-        }
-    };
-
-    render() {
-        const { messages, input, loading, amalgamError, amalgamLoading, amalgamData } = this.state;
-
-        if (amalgamError) {
-            return (
-                <ThemedView style={styles.container}>
-                    <ThemedText style={styles.errorText}>Error fetching amalgam data: {amalgamError}</ThemedText>
-                </ThemedView>
-            )
-        }
-
-        let amalgamMsg: string;
-        if (amalgamLoading) {
-            amalgamMsg = "Loading codebase amalgam..."
-        } else if (amalgamData != null) {
-            amalgamMsg = AmalgamSummary(amalgamData)
-        } else {
-            amalgamMsg = "Error loading codebase amalgam."
-        }
-        amalgamMsg = ProjectSummary(this.props.selectedProject) + "\n\n" + amalgamMsg
-
-        // @ts-ignore
+    if (amalgamError) {
         return (
-            <ThemedView>
-                <KeyboardAvoidingView
-                    style={styles.container}
-                    behavior={Platform.OS === "ios" ? "padding" : undefined}
-                    keyboardVerticalOffset={60}
-                >
-                    <ThemedText type={"title"}>Codebase AI Chat</ThemedText>
-                    <ThemedText style={styles.description}>This app adds the codebase amalgam to the beginning of the chat.</ThemedText>
-                    <ScrollView
-                        ref={this.chatScrollRef}
-                        style={styles.chatContainer}
-                        contentContainerStyle={styles.chatContent}
-                    >
-                        <ChatCard key={"amalgam"} role={Roles.CODEBASE} content={amalgamMsg} />
-                        {messages.map((msg, index) => (
-                            <ChatCard key={index} role={msg.role} content={msg.content} />
-                        ))}
-                    </ScrollView>
-                    <Input
-                        placeholder="Chat with AI about your codebase..."
-                        value={input}
-                        onChangeText={this.handleInputChange}
-                        onSubmitEditing={this.handleSendMessage}
-                        multiline
-                        containerStyle={styles.inputContainer}
-                        inputStyle={styles.input}
-                    />
-                    <Button
-                        title={loading ? 'Sending...' : 'Send'}
-                        onPress={this.handleSendMessage}
-                        disabled={loading || amalgamLoading}
-                        buttonStyle={styles.button}
-                    />
-                </KeyboardAvoidingView>
+            <ThemedView style={styles.container}>
+                <ThemedText style={styles.errorText}>Error fetching amalgam data: {amalgamError}</ThemedText>
             </ThemedView>
         );
     }
-}
+
+    const amalgamMsg = amalgamLoading
+        ? "Loading codebase amalgam..."
+        : amalgamData
+            ? projectSummary(selectedProject) + "\n\n" + amalgamSummary(amalgamData)
+            : "Error loading codebase amalgam.";
+
+    return (
+        <ThemedView>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                keyboardVerticalOffset={60}
+            >
+                <ThemedText type={"title"}>Codebase AI Chat</ThemedText>
+                <ThemedText style={styles.description}>This app adds the codebase amalgam to the beginning of the chat.</ThemedText>
+                <ScrollView
+                    ref={chatScrollRef}
+                    style={styles.chatContainer}
+                    contentContainerStyle={styles.chatContent}
+                >
+                    <ChatCard key={"amalgam"} role={Roles.CODEBASE} content={amalgamMsg} />
+                    {messages.map((msg, index) => (
+                        <ChatCard key={index} role={msg.role} content={msg.content} />
+                    ))}
+                </ScrollView>
+                <Input
+                    placeholder="Chat with AI about your codebase..."
+                    value={input}
+                    onChangeText={setInput}
+                    onSubmitEditing={handleSendMessage}
+                    multiline
+                    containerStyle={styles.inputContainer}
+                    inputStyle={styles.input}
+                />
+                <Button
+                    title={loading ? 'Sending...' : 'Send'}
+                    onPress={handleSendMessage}
+                    disabled={loading || amalgamLoading}
+                    buttonStyle={styles.button}
+                />
+            </KeyboardAvoidingView>
+        </ThemedView>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
-    },
-    header: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 8,
     },
     description: {
         fontSize: 16,
@@ -251,4 +168,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default connectToStore<OwnProps, StoreProps>(Chat, mapStoreToProps);
+export default Chat;

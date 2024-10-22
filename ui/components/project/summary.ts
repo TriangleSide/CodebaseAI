@@ -1,6 +1,6 @@
 import {Project} from "@/api/ProjectAPIClient";
 
-export function ProjectSummary(project: Project | null | undefined): string {
+export function projectSummary(project: Project | null | undefined): string {
     if (!project) {
         return "error";
     }

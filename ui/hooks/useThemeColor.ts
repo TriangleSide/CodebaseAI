@@ -1,7 +1,9 @@
-import { useColorScheme } from 'react-native';
 import { Colors } from '@/constants/Colors';
+import {selectTheme} from "@/state/slices/theme";
+import {useSelector} from "react-redux";
 
-export function useThemeColor(colorName: keyof typeof Colors.light & keyof typeof Colors.dark) {
-  const theme = useColorScheme() ?? 'light';
-  return Colors[theme][colorName];
+export function componentColor(component: keyof typeof Colors.light & keyof typeof Colors.dark) {
+  const theme = useSelector(selectTheme)
+  const selectedTheme = theme ?? 'dark';
+  return Colors[selectedTheme][component];
 }

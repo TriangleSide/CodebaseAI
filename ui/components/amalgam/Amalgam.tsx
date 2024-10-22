@@ -172,4 +172,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default connectToStore(Amalgam, mapStoreToProps);
+export default connectToStore<OwnProps, StoreProps>(Amalgam, mapStoreToProps);

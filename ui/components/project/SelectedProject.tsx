@@ -10,15 +10,14 @@ interface DispatchProps {
     clearSelectedProject: () => void;
 }
 
-interface StoreProps {}
+interface StoreProps {
+}
 
 interface OwnProps {
     children?: React.ReactNode;
 }
 
-const mapStoreToProps = (state: RootState): StoreProps => ({
-    selectedProject: state.projects.selectedProject
-});
+const mapStoreToProps = (state: RootState): StoreProps => ({});
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
     setSelectedProject: (project: Project) => dispatch(setSelectedProject(project)),
@@ -113,4 +112,4 @@ class SelectedProject extends React.Component<Props, State> {
     }
 }
 
-export default connectToStore(SelectedProject, mapStoreToProps, mapDispatchToProps);
+export default connectToStore<OwnProps, StoreProps, DispatchProps>(SelectedProject, mapStoreToProps, mapDispatchToProps);

@@ -258,4 +258,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default connectToStore(Projects, mapStoreToProps, mapDispatchToProps);
+export default connectToStore<OwnProps, StoreProps, DispatchProps>(Projects, mapStoreToProps, mapDispatchToProps);

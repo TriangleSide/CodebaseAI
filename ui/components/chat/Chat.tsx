@@ -251,4 +251,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default connectToStore(Chat, mapStoreToProps);
+export default connectToStore<OwnProps, StoreProps>(Chat, mapStoreToProps);

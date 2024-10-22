@@ -12,6 +12,7 @@ export const Colors = {
     listItemBorder: '#687076',
     selected: '#4269E1',
     cardDivider: '#D0D0D0',
+    codeColor: '#fc9861',
   },
   dark: {
     text: '#ECEDEE',
@@ -23,5 +24,6 @@ export const Colors = {
     listItemBorder: '#9BA1A6',
     selected: '#4269E1',
     cardDivider: '#404040',
+    codeColor: '#fc9861',
   },
 };

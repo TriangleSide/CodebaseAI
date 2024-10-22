@@ -140,18 +140,18 @@ const Projects: React.FC<OwnProps> = ({ children }) => {
             ) : error ? (
                 <ThemedText style={styles.errorText}>{error}</ThemedText>
             ) : (
-                <ThemedView style={styles.listContainer}>
-                    {projects.length > 0 && (
-                        <ThemedText style={styles.selectText}>Select a project below.</ThemedText>
-                    )}
-                    <FlatList
-                        data={projects}
-                        keyExtractor={(item) => item.id!.toString()}
-                        renderItem={renderItem}
-                    />
-                    {children}
-                </ThemedView>
+                <FlatList
+                    data={projects}
+                    keyExtractor={(item) => item.id!.toString()}
+                    renderItem={renderItem}
+                    ListHeaderComponent={
+                        projects.length > 0 ? (
+                            <ThemedText style={styles.selectText}>Select a project below.</ThemedText>
+                        ) : null
+                    }
+                />
             )}
+            {children}
             <AddProjectModal
                 show={showModal}
                 onHide={toggleModal}

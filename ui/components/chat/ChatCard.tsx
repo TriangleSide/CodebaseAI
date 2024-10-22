@@ -5,8 +5,8 @@ import { role, Roles } from '@/api/ChatAPIClient';
 import { Card } from 'react-native-elements';
 import ThemedText from "@/components/themed/ThemedText";
 import ThemedCard from "@/components/themed/ThemedCard";
-import Theme from "@/state/slices/theme";
 import ThemedCardDivider from "@/components/themed/ThemedCardDivider";
+import ThemedMarkdown from "@/components/themed/ThemedMarkdown";
 
 interface Props {
     role: role;
@@ -32,6 +32,10 @@ const ChatCard: React.FC<Props> = ({ role, content }) => {
             user = "Codebase";
             cardStyle = { ...styles.card, ...styles.codebaseCard };
             break;
+        case Roles.ERROR:
+            user = "Error";
+            cardStyle = { ...styles.card, ...styles.errorCard };
+            break;
         default:
             throw new Error("Unknown role.");
     }
@@ -42,7 +46,7 @@ const ChatCard: React.FC<Props> = ({ role, content }) => {
                 <ThemedText>{user}</ThemedText>
             </Card.Title>
             <ThemedCardDivider/>
-            {useMarkdown? <Markdown>{content}</Markdown> : <ThemedText>{content}</ThemedText>}
+            {useMarkdown? <ThemedMarkdown>{content}</ThemedMarkdown> : <ThemedText>{content}</ThemedText>}
         </ThemedCard>
     );
 };
@@ -61,6 +65,9 @@ const styles = StyleSheet.create({
         borderColor: '#28A745',
     },
     codebaseCard: {
+        borderColor: '#FF7518',
+    },
+    errorCard: {
         borderColor: '#DC143C',
     },
 });

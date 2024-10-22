@@ -1,11 +1,12 @@
+import React, { useEffect } from 'react';
+import {SafeAreaView, StatusBar} from "react-native";
+import { Provider } from "react-redux";
+import store from "@/state/store";
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-import {Provider} from "react-redux";
-import store from "@/state/store";
 import Themed from "@/components/themed/Themed";
+
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -28,10 +29,12 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <Themed>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
+        <SafeAreaView style={{ flex: 1, paddingTop: StatusBar.currentHeight }}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </SafeAreaView>
       </Themed>
     </Provider>
   );

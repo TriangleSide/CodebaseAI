@@ -8,6 +8,7 @@ export class Roles {
     public static readonly USER: role = 'user';
     public static readonly ASSISTANT: role = 'assistant';
     public static readonly CODEBASE: role = 'codebase';
+    public static readonly ERROR: role = 'error';
 }
 
 export interface Message {
@@ -37,7 +38,10 @@ export default class ChatAPIClient {
             body: JSON.stringify({ messages } as ChatRequest),
         });
 
-        if (response.ok && response.body != null) {
+        if (response.ok) {
+            if (!response.body) {
+                throw new Error("Response body is null.")
+            }
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             while (true) {

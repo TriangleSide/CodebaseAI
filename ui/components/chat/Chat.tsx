@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { Input, Button } from 'react-native-elements';
+import { Button } from 'react-native-elements';
 import ChatAPIClient, { Message } from "@/api/ChatAPIClient";
 import ChatCard from "./ChatCard";
 import { amalgamSummary } from "@/components/amalgam/summary";
@@ -23,25 +23,24 @@ const Chat: React.FC<Props> = () => {
     const [amalgamLoading, setAmalgamLoading] = useState(true);
     const [amalgamData, setAmalgamData] = useState<AmalgamResponse | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
-    const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [inputValue, setInputValue] = useState('');
 
     const fetchAmalgamData = async () => {
-        setAmalgamError(null);
-        setAmalgamData(null);
         setAmalgamLoading(true);
-        try {
-            if (!selectedProject) {
-                throw new Error('Project not found');
-            }
-            const data = await AmalgamAPIClient.fetchAmalgam(selectedProject.id);
-            setAmalgamData(data);
-            setAmalgamLoading(false);
-        } catch (err) {
-            console.error('Failed to fetch amalgam data:', err);
-            setAmalgamError('Error fetching amalgam data');
-            setAmalgamLoading(false);
+        setAmalgamData(null);
+        setAmalgamError(null);
+        if (!selectedProject) {
+            throw new Error('Project not found');
         }
+        await AmalgamAPIClient.fetchAmalgam(selectedProject.id).then().catch((err) => {
+            setAmalgamError('Error fetching amalgam data: ' + (err.message || err));
+            return null;
+        }).finally(() => {
+            setAmalgamLoading(false);
+        }).then((data) => {
+            setAmalgamData(data);
+        })
     };
 
     useEffect(() => {
@@ -55,11 +54,13 @@ const Chat: React.FC<Props> = () => {
     }, [messages]);
 
     const handleSendMessage = async () => {
-        if (input.trim() === '') return;
+        if (loading || amalgamLoading || inputValue.trim() === '') {
+            return;
+        }
 
-        let updatedMessages = [...messages, { role: Roles.USER, content: input.trim() }, { role: Roles.ASSISTANT, content: "" }];
+        let updatedMessages = [...messages, { role: Roles.USER, content: inputValue.trim() }, { role: Roles.ASSISTANT, content: "" }];
         setMessages(updatedMessages);
-        setInput('');
+        setInputValue('');
         setLoading(true);
 
         const tokenCallback = (token: string) => {
@@ -72,16 +73,19 @@ const Chat: React.FC<Props> = () => {
             });
         };
 
-        try {
-            const apiRequestMessages = updatedMessages.map(msg => ({ role: msg.role, content: msg.content }));
-            apiRequestMessages[0].content = amalgamData?.content + "// User request below.\n\n" + apiRequestMessages[0].content;
+        const apiRequestMessages = updatedMessages.map(msg => ({ role: msg.role, content: msg.content }));
+        apiRequestMessages[0].content = amalgamData?.content + "// User request below.\n\n" + apiRequestMessages[0].content;
+        await ChatAPIClient.sendMessage(apiRequestMessages, tokenCallback).catch((err) => {
+            setMessages((prevMessages) =>
+                [...prevMessages, { role: Roles.ERROR, content: 'Error while sending the request: ' + err}]
+            );
+        }).finally(() => {
+            setLoading(false);
+        });
+    };
 
-            await ChatAPIClient.sendMessage(apiRequestMessages, tokenCallback);
-            setLoading(false);
-        } catch (error) {
-            setMessages((prevMessages) => [...prevMessages, { role: Roles.ASSISTANT, content: 'Error: ' + error }]);
-            setLoading(false);
-        }
+    const handleTextChange = (text: string) => {
+        setInputValue(text);
     };
 
     if (amalgamError) {
@@ -119,18 +123,15 @@ const Chat: React.FC<Props> = () => {
                 </ScrollView>
                 <ThemedInput
                     placeholder="Chat with AI about your codebase..."
-                    value={input}
-                    onChangeText={setInput}
-                    onSubmitEditing={handleSendMessage}
-                    multiline
-                    containerStyle={styles.inputContainer}
-                    inputStyle={styles.input}
+                    multiline={true}
+                    style={[styles.input]}
+                    onChangeText={(text) => handleTextChange(text)}
+                    value={inputValue}
                 />
                 <Button
                     title={loading ? 'Sending...' : 'Send'}
                     onPress={handleSendMessage}
                     disabled={loading || amalgamLoading}
-                    buttonStyle={styles.button}
                 />
             </KeyboardAvoidingView>
         </ThemedView>
@@ -153,17 +154,13 @@ const styles = StyleSheet.create({
     chatContent: {
         paddingVertical: 8,
     },
-    inputContainer: {
-        marginBottom: 8,
-    },
     input: {
-        minHeight: 60,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        borderRadius: 4,
+        borderWidth: 1,
         textAlignVertical: 'top',
-        borderWidth: 3,
-        padding: 5,
-    },
-    button: {
-        backgroundColor: '#2089dc',
+        minHeight: 60,
     },
     errorText: {
         color: 'red',

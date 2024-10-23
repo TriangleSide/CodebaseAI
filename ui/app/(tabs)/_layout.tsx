@@ -25,7 +25,7 @@ export default function TabLayout(): React.ReactNode {
         options={{
           title: 'Projects',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            <TabBarIcon name={focused ? 'file-tray-full' : 'file-tray-full-outline'} color={color} />
           ),
         }}
       />
@@ -34,7 +34,7 @@ export default function TabLayout(): React.ReactNode {
         options={{
           title: 'Amalgam',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            <TabBarIcon name={focused ? 'copy' : 'copy-outline'} color={color} />
           ),
         }}
       />
@@ -43,7 +43,7 @@ export default function TabLayout(): React.ReactNode {
         options={{
           title: 'Chat',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            <TabBarIcon name={focused ? 'bulb' : 'bulb-outline'} color={color} />
           ),
         }}
       />

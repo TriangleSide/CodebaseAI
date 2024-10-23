@@ -12,8 +12,7 @@ type Props = TextProps & {
     type?: typeof TEXT_TYPES[keyof typeof TEXT_TYPES];
 };
 
-export default function ThemedText(props: Props): React.ReactNode {
-    const { style, type = TEXT_TYPES.DEFAULT, ...rest } = props;
+export default function ThemedText({ type = TEXT_TYPES.DEFAULT, style, ...rest }: Props): React.ReactNode {
     const color = componentColor('text');
     return (
         <Text

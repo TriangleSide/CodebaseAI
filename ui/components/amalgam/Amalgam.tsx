@@ -23,19 +23,23 @@ const Amalgam: React.FC<Props> = ({}) => {
         setLoading(true);
         setError(null);
 
-        try {
-            if (!selectedProject) throw new Error('Project not selected.');
-            const data = await AmalgamAPIClient.fetchAmalgam(selectedProject.id);
-            setAmalgam(data);
-            setLoading(false);
-        } catch (err) {
+        if (!selectedProject) {
+            throw new Error('Project not selected.');
+        }
+
+        await AmalgamAPIClient.fetchAmalgam(selectedProject.id).catch((err) => {
             if (err instanceof Error) {
                 setError(err.message);
             } else {
                 setError('An unknown error occurred');
             }
+        }).finally(() => {
             setLoading(false);
-        }
+        }).then((data) => {
+            if (data) {
+                setAmalgam(data);
+            }
+        })
     };
 
     const handleCopy = () => {
@@ -112,9 +116,7 @@ const styles = StyleSheet.create({
     amalgamContainer: {
         marginTop: 16,
         padding: 12,
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: 'blue',
+        borderWidth: 4,
     },
     message: {
         fontSize: 16,

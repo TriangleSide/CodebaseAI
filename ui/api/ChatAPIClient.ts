@@ -1,5 +1,5 @@
 import {Paths} from "@/constants/Paths";
-import {ContentTypes} from "@/constants/Headers";
+import {Headers} from "@/constants/Headers";
 import {Methods} from "@/constants/Methods";
 
 export type role = string;
@@ -28,46 +28,54 @@ export interface ChatResponse {
 
 export type TokenCallback = (token: string) => void;
 
+function parseLines(chunk: string, tokenCallback: TokenCallback) {
+    const lines: string[] = chunk.split('\n').filter(Boolean);
+    for (const line of lines) {
+        if (line.trim()) {
+            const streamResponse: ChatResponse = JSON.parse(line);
+            if (streamResponse.error != null) {
+                throw new Error(streamResponse.error);
+            } else if (streamResponse.done != null && streamResponse.done) {
+                break;
+            } else if (streamResponse.content != null) {
+                tokenCallback(streamResponse.content);
+            } else {
+                throw new Error('Unknown response stream state.');
+            }
+        }
+    }
+}
+
 export default class ChatAPIClient {
     static async sendMessage(messages: Message[], tokenCallback: TokenCallback): Promise<void> {
         const response = await fetch(Paths.CHAT, {
             method: Methods.POST,
             headers: {
-                [ContentTypes.HEADER]: ContentTypes.JSON,
+                [Headers.CONTENT_TYPE]: Headers.APPLICATION_JSON,
+                [Headers.ACCEPT]: Headers.APPLICATION_JSON,
             },
             body: JSON.stringify({ messages } as ChatRequest),
         });
 
-        if (response.ok) {
-            if (!response.body) {
-                throw new Error("Response body is null.")
-            }
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) {
-                    break;
-                }
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n').filter(Boolean);
-                for (const line of lines) {
-                    if (line.trim()) {
-                        const streamResponse: ChatResponse = JSON.parse(line);
-                        if (streamResponse.error != null) {
-                            throw new Error(streamResponse.error);
-                        } else if (streamResponse.done != null && streamResponse.done) {
-                            break;
-                        } else if (streamResponse.content != null) {
-                            tokenCallback(streamResponse.content);
-                        } else {
-                            throw new Error('Unknown response stream state.');
-                        }
-                    }
-                }
-            }
-        } else {
+        if (!response.ok) {
             throw new Error(`${response.status} ${response.statusText}`);
+        }
+
+        if (!response.body) {
+            const text = await response.text();
+            parseLines(text, tokenCallback)
+            return
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+                break;
+            }
+            const chunk = decoder.decode(value, { stream: true });
+            parseLines(chunk, tokenCallback)
         }
     }
 }

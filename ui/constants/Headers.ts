@@ -1,4 +1,5 @@
-export class ContentTypes {
-    public static readonly HEADER = "Content-Type";
-    public static readonly JSON = "application/json";
+export class Headers {
+    public static readonly CONTENT_TYPE = "Content-Type";
+    public static readonly ACCEPT = "Accept";
+    public static readonly APPLICATION_JSON = "application/json";
 }

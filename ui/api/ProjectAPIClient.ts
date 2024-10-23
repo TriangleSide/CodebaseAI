@@ -1,5 +1,5 @@
 import {Paths} from "@/constants/Paths";
-import {ContentTypes} from "@/constants/Headers";
+import {Headers} from "@/constants/Headers";
 import {Methods} from "@/constants/Methods";
 
 export interface Project {
@@ -20,7 +20,11 @@ export class ProjectAPIClient {
             queryParams.set(ProjectAPIClient.LIST_LIMIT_HEADER, limit.toString());
         }
 
-        const response = await fetch(`${Paths.PROJECTS}?${queryParams.toString()}`);
+        const response = await fetch(`${Paths.PROJECTS}?${queryParams.toString()}`, {
+            headers: {
+                [Headers.ACCEPT]: Headers.APPLICATION_JSON
+            },
+        });
         if (response.ok) {
             const data: ListProjectsResponse = await response.json();
             return data;
@@ -33,7 +37,7 @@ export class ProjectAPIClient {
         const response = await fetch(Paths.PROJECTS, {
             method: Methods.POST,
             headers: {
-                [ContentTypes.HEADER]: ContentTypes.JSON,
+                [Headers.CONTENT_TYPE]: Headers.APPLICATION_JSON,
             },
             body: JSON.stringify({ path: projectPath }),
         });

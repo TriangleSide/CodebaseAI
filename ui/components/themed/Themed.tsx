@@ -17,7 +17,7 @@ export const Themed: React.FC<Props> = (props: Props) => {
 
     useEffect(() => {
         if (theme !== systemTheme) {
-            console.log("Setting theme to '" + systemTheme + "'.")
+            console.debug("Setting theme to '" + systemTheme + "'.")
             dispatch(setTheme(systemTheme))
         }
     }, [theme, systemTheme]);

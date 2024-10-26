@@ -1,5 +1,5 @@
-import {Paths} from "@/constants/Paths";
-import {Headers} from "@/constants/Headers";
+import {Paths} from "@/api/Paths";
+import {Headers} from "@/api/Headers";
 
 export interface AmalgamResponse {
     content: string;

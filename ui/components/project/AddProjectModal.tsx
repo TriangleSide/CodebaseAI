@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Button } from 'react-native-elements';
-import ThemedText from "@/components/themed/ThemedText";
-import ThemedView from "@/components/themed/ThemedView";
-import ThemedOverlay from "@/components/themed/ThemedOverlay";
-import ThemedInput from "@/components/themed/ThemedInput";
+import { ThemedView, ThemedText, ThemedOverlay, ThemedInput } from "@triangleside/reactnativebase";
 
 interface Props {
     show: boolean;

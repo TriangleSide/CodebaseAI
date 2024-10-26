@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ProjectAPIClient, Project } from "@/api/ProjectAPIClient";
 import { useStoreDispatch, useStoreSelector } from "@/state/store";
 import { clearSelectedProject, setSelectedProject } from "@/state/slices/project";
-import ThemedView from "@/components/themed/ThemedView";
-import ThemedText from "@/components/themed/ThemedText";
+import { ThemedView, ThemedText } from "@triangleside/reactnativebase";
+
 
 interface Props {
     children?: React.ReactNode;

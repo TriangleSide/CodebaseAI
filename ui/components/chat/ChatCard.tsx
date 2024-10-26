@@ -1,12 +1,8 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import Markdown from 'react-native-markdown-display';
 import { role, Roles } from '@/api/ChatAPIClient';
 import { Card } from 'react-native-elements';
-import ThemedText from "@/components/themed/ThemedText";
-import ThemedCard from "@/components/themed/ThemedCard";
-import ThemedCardDivider from "@/components/themed/ThemedCardDivider";
-import ThemedMarkdown from "@/components/themed/ThemedMarkdown";
+import { ThemedMarkdown, ThemedCardDivider, ThemedCard, ThemedText } from "@triangleside/reactnativebase";
 
 interface Props {
     role: role;

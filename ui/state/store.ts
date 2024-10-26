@@ -1,6 +1,6 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import projectReducer from "@/state/slices/project";
-import themeReducer from "@/state/slices/theme";
+import {themeReducer} from "@triangleside/reactnativebase";
 import {TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
 
 export const rootReducer = combineReducers({

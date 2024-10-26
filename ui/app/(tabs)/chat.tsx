@@ -1,7 +1,7 @@
 import React from 'react';
 import Chat from "@/components/chat/Chat";
 import SelectedProject from "@/components/project/SelectedProject";
-import ThemedView from "@/components/themed/ThemedView";
+import { ThemedView } from "@triangleside/reactnativebase";
 import {ScrollView} from "react-native";
 
 export default function ChatScreen(): React.ReactNode {

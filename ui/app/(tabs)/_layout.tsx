@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import componentColor from '@/hooks/componentColor';
+import { componentColor } from '@triangleside/reactnativebase';
 
 export default function TabLayout(): React.ReactNode {
   const tintColor = componentColor('tint')

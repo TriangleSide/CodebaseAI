@@ -1,7 +1,7 @@
 import React from 'react';
 import Projects from "@/components/project/Projects";
 import { ScrollView } from 'react-native';
-import ThemedView from "@/components/themed/ThemedView";
+import { ThemedView } from "@triangleside/reactnativebase";
 
 export default function ProjectsScreen(): React.ReactNode {
     return (

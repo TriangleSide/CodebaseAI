@@ -1,6 +1,6 @@
 import React from 'react';
 import Amalgam from "@/components/amalgam/Amalgam";
-import ThemedView from "@/components/themed/ThemedView";
+import { ThemedView } from "@triangleside/reactnativebase";
 import {ScrollView} from "react-native";
 import SelectedProject from "@/components/project/SelectedProject";
 

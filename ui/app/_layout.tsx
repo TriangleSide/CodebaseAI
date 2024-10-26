@@ -5,8 +5,7 @@ import store from "@/state/store";
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import Themed from "@/components/themed/Themed";
-
+import { Themed } from "@triangleside/reactnativebase";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

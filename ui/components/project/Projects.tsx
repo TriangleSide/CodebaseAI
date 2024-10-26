@@ -9,9 +9,7 @@ import AddProjectModal from '@/components/project/AddProjectModal';
 import { ProjectAPIClient, Project } from "@/api/ProjectAPIClient";
 import { useStoreDispatch } from "@/state/store";
 import { clearSelectedProject, setSelectedProject } from "@/state/slices/project";
-import ThemedView from "@/components/themed/ThemedView";
-import ThemedText from "@/components/themed/ThemedText";
-import ThemedListItem from "@/components/themed/ThemedListItem";
+import { ThemedView, ThemedListItem, ThemedText } from "@triangleside/reactnativebase";
 
 interface OwnProps {
     children?: React.ReactNode;

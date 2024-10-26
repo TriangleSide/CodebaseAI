@@ -7,11 +7,9 @@ import { amalgamSummary } from "@/components/amalgam/summary";
 import AmalgamAPIClient, { AmalgamResponse } from "@/api/AmalgamAPIClient";
 import { Roles } from "@/api/ChatAPIClient";
 import { projectSummary } from "@/components/project/summary";
-import ThemedText from "@/components/themed/ThemedText";
-import ThemedView from "@/components/themed/ThemedView";
 import { useStoreSelector } from "@/state/store";
 import { selectSelectedProject } from "@/state/slices/project";
-import ThemedInput from "@/components/themed/ThemedInput";
+import { ThemedInput, ThemedView, ThemedText } from "@triangleside/reactnativebase";
 
 interface Props {}
 

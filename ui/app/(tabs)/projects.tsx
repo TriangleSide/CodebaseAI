@@ -6,7 +6,7 @@ import { ThemedView } from "@triangleside/reactnativebase";
 export default function ProjectsScreen(): React.ReactNode {
     return (
         <ScrollView>
-            <ThemedView center={true}>
+            <ThemedView centerHorizontally={true}>
                 <Projects />
             </ThemedView>
         </ScrollView>

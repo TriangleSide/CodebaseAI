@@ -7,7 +7,7 @@ import {ScrollView} from "react-native";
 export default function ChatScreen(): React.ReactNode {
     return (
         <ScrollView>
-            <ThemedView center={true}>
+            <ThemedView centerHorizontally={true}>
                 <SelectedProject>
                     <Chat />
                 </SelectedProject>

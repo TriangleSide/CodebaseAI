@@ -7,7 +7,7 @@ import SelectedProject from "@/components/project/SelectedProject";
 export default function AmalgamScreen(): React.ReactNode {
     return (
         <ScrollView>
-            <ThemedView center={true}>
+            <ThemedView centerHorizontally={true}>
                 <SelectedProject>
                     <Amalgam />
                 </SelectedProject>

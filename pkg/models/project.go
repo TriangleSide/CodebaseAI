@@ -22,7 +22,7 @@ type ListProjectsResponse struct {
 }
 
 type CreateProjectRequest struct {
-	Path string `json:"path" validate:"required"`
+	Path string `json:"path" validate:"required,filepath"`
 }
 
 type DeleteProjectRequest struct {

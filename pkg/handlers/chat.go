@@ -8,6 +8,7 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
 	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
 	"github.com/TriangleSide/GoBase/pkg/http/responders"
+	"github.com/TriangleSide/GoBase/pkg/logger"
 )
 
 type Chat struct {
@@ -27,7 +28,9 @@ func (c *Chat) Stream(w http.ResponseWriter, r *http.Request) {
 			return nil, 0, err
 		}
 		return tokenStream, http.StatusOK, nil
-	})
+	}, responders.WithWriteErrorCallback(func(err error) {
+		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+	}))
 }
 
 func (c *Chat) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {

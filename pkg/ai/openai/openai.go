@@ -10,7 +10,7 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
 	"github.com/TriangleSide/GoBase/pkg/logger"
-	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
+	"github.com/TriangleSide/GoBase/pkg/ptr"
 	"github.com/sashabaranov/go-openai"
 )
 

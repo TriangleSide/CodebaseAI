@@ -10,7 +10,7 @@ import (
 	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
 	"github.com/TriangleSide/GoBase/pkg/http/responders"
 	"github.com/TriangleSide/GoBase/pkg/logger"
-	"github.com/TriangleSide/GoBase/pkg/utils/ptr"
+	"github.com/TriangleSide/GoBase/pkg/ptr"
 )
 
 type Amalgam struct {
@@ -44,7 +44,9 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 			Content:    amalgamContent,
 			TokenCount: tokenCount,
 		}, http.StatusOK, nil
-	})
+	}, responders.WithWriteErrorCallback(func(err error) {
+		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+	}))
 }
 
 func (a *Amalgam) AcceptHTTPAPIBuilder(builder *baseapi.HTTPAPIBuilder) {

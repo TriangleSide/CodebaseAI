@@ -6,9 +6,9 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/api"
 	"github.com/TriangleSide/CodebaseAI/pkg/db/daos/projects"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
-	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
-	"github.com/TriangleSide/GoBase/pkg/http/responders"
-	"github.com/TriangleSide/GoBase/pkg/logger"
+	baseapi "github.com/TriangleSide/GoTools/pkg/http/api"
+	"github.com/TriangleSide/GoTools/pkg/http/responders"
+	"github.com/TriangleSide/GoTools/pkg/logger"
 )
 
 type Project struct {
@@ -31,7 +31,7 @@ func (p *Project) Get(w http.ResponseWriter, r *http.Request) {
 			return nil, 0, err
 		}
 		return project, http.StatusOK, nil
-	}, responders.WithWriteErrorCallback(func(err error) {
+	}, responders.WithErrorCallback(func(err error) {
 		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
 	}))
 }
@@ -47,7 +47,7 @@ func (p *Project) List(w http.ResponseWriter, r *http.Request) {
 		return &models.ListProjectsResponse{
 			Projects: projectList,
 		}, http.StatusOK, nil
-	}, responders.WithWriteErrorCallback(func(err error) {
+	}, responders.WithErrorCallback(func(err error) {
 		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
 	}))
 }
@@ -61,7 +61,7 @@ func (p *Project) Create(w http.ResponseWriter, r *http.Request) {
 			return nil, 0, err
 		}
 		return project, http.StatusAccepted, nil
-	}, responders.WithWriteErrorCallback(func(err error) {
+	}, responders.WithErrorCallback(func(err error) {
 		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
 	}))
 }
@@ -79,7 +79,7 @@ func (p *Project) Delete(w http.ResponseWriter, r *http.Request) {
 		} else {
 			return http.StatusNoContent, nil
 		}
-	}, responders.WithWriteErrorCallback(func(err error) {
+	}, responders.WithErrorCallback(func(err error) {
 		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
 	}))
 }
@@ -97,7 +97,7 @@ func (p *Project) Update(w http.ResponseWriter, r *http.Request) {
 		} else {
 			return http.StatusNoContent, nil
 		}
-	}, responders.WithWriteErrorCallback(func(err error) {
+	}, responders.WithErrorCallback(func(err error) {
 		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
 	}))
 }

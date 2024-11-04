@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/db"
-	basemigration "github.com/TriangleSide/GoBase/pkg/database/migration"
-	"github.com/TriangleSide/GoBase/pkg/logger"
+	basemigration "github.com/TriangleSide/GoTools/pkg/database/migration"
+	"github.com/TriangleSide/GoTools/pkg/logger"
 )
 
 const (

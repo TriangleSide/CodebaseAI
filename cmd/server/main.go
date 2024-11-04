@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"github.com/TriangleSide/CodebaseAI/pkg/db/migrations"
-	basemigration "github.com/TriangleSide/GoBase/pkg/database/migration"
-	"github.com/TriangleSide/GoBase/pkg/validation"
+	basemigration "github.com/TriangleSide/GoTools/pkg/database/migration"
+	"github.com/TriangleSide/GoTools/pkg/validation"
 	"net"
 	"os"
 	"os/signal"
@@ -16,11 +16,11 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/db/daos/projects"
 	"github.com/TriangleSide/CodebaseAI/pkg/handlers"
 	"github.com/TriangleSide/CodebaseAI/pkg/middleware"
-	baseconfig "github.com/TriangleSide/GoBase/pkg/config"
-	"github.com/TriangleSide/GoBase/pkg/http/api"
-	basemiddleware "github.com/TriangleSide/GoBase/pkg/http/middleware"
-	"github.com/TriangleSide/GoBase/pkg/http/server"
-	"github.com/TriangleSide/GoBase/pkg/logger"
+	baseconfig "github.com/TriangleSide/GoTools/pkg/config"
+	"github.com/TriangleSide/GoTools/pkg/http/api"
+	basemiddleware "github.com/TriangleSide/GoTools/pkg/http/middleware"
+	"github.com/TriangleSide/GoTools/pkg/http/server"
+	"github.com/TriangleSide/GoTools/pkg/logger"
 )
 
 const (

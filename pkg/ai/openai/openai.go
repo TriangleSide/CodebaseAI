@@ -9,8 +9,8 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/ai"
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
-	"github.com/TriangleSide/GoBase/pkg/logger"
-	"github.com/TriangleSide/GoBase/pkg/ptr"
+	"github.com/TriangleSide/GoTools/pkg/logger"
+	"github.com/TriangleSide/GoTools/pkg/ptr"
 	"github.com/sashabaranov/go-openai"
 )
 

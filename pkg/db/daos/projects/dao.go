@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
-	"github.com/TriangleSide/GoBase/pkg/logger"
-	"github.com/TriangleSide/GoBase/pkg/ptr"
+	"github.com/TriangleSide/GoTools/pkg/logger"
+	"github.com/TriangleSide/GoTools/pkg/ptr"
 )
 
 const (

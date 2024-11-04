@@ -7,10 +7,10 @@ import (
 	"github.com/TriangleSide/CodebaseAI/pkg/api"
 	"github.com/TriangleSide/CodebaseAI/pkg/db/daos/projects"
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
-	baseapi "github.com/TriangleSide/GoBase/pkg/http/api"
-	"github.com/TriangleSide/GoBase/pkg/http/responders"
-	"github.com/TriangleSide/GoBase/pkg/logger"
-	"github.com/TriangleSide/GoBase/pkg/ptr"
+	baseapi "github.com/TriangleSide/GoTools/pkg/http/api"
+	"github.com/TriangleSide/GoTools/pkg/http/responders"
+	"github.com/TriangleSide/GoTools/pkg/logger"
+	"github.com/TriangleSide/GoTools/pkg/ptr"
 )
 
 type Amalgam struct {
@@ -44,7 +44,7 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 			Content:    amalgamContent,
 			TokenCount: tokenCount,
 		}, http.StatusOK, nil
-	}, responders.WithWriteErrorCallback(func(err error) {
+	}, responders.WithErrorCallback(func(err error) {
 		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
 	}))
 }

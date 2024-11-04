@@ -12,8 +12,8 @@ import (
 	"github.com/tiktoken-go/tokenizer"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/config"
-	baseconfig "github.com/TriangleSide/GoBase/pkg/config"
-	"github.com/TriangleSide/GoBase/pkg/logger"
+	baseconfig "github.com/TriangleSide/GoTools/pkg/config"
+	"github.com/TriangleSide/GoTools/pkg/logger"
 )
 
 var (

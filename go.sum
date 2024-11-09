@@ -1,5 +1,7 @@
 github.com/TriangleSide/GoTools v0.0.0-20241104220243-3b07422851e3 h1:12DsSWCMttIRZC3MTFcFjKTYp2VeO0DWMyYEJ0ZVpfo=
 github.com/TriangleSide/GoTools v0.0.0-20241104220243-3b07422851e3/go.mod h1:AOtLAG3fgwFOxkMGj1PyIc2jvfRWtOIyVjee3Esm6a0=
+github.com/TriangleSide/GoTools v0.0.0-20241109195239-616cf2e53026 h1:XslaW+JNnn+y4eL5Bne7p2wWGfmSPna+56yFTdAuIy4=
+github.com/TriangleSide/GoTools v0.0.0-20241109195239-616cf2e53026/go.mod h1:AOtLAG3fgwFOxkMGj1PyIc2jvfRWtOIyVjee3Esm6a0=
 github.com/dlclark/regexp2 v1.11.4 h1:rPYF9/LECdNymJufQKmri9gV604RvvABwgOA8un7yAo=
 github.com/dlclark/regexp2 v1.11.4/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
 github.com/mattn/go-sqlite3 v1.14.24 h1:tpSp2G2KyMnnQu99ngJ47EIkWVmliIizyZBfPrBWDRM=

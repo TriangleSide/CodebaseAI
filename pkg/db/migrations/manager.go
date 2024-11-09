@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -49,7 +50,7 @@ func (m *manager) EnsureDataStores(ctx context.Context) error {
 
 	_, err := m.db.DB().ExecContext(ctx, createLockTable)
 	if err != nil {
-		return fmt.Errorf("failed to ensure lock table: %w", err)
+		return fmt.Errorf("failed to ensure lock table (%w)", err)
 	}
 
 	createStatusTable := `
@@ -61,7 +62,7 @@ func (m *manager) EnsureDataStores(ctx context.Context) error {
 
 	_, err = m.db.DB().ExecContext(ctx, createStatusTable)
 	if err != nil {
-		return fmt.Errorf("failed to ensure status table: %w", err)
+		return fmt.Errorf("failed to ensure status table (%w)", err)
 	}
 
 	return nil
@@ -83,15 +84,15 @@ func (m *manager) AcquireMigrationLock(ctx context.Context) error {
 
 	result, err := m.db.DB().ExecContext(ctx, query, m.machineID, expiration, m.machineID, expiration, now)
 	if err != nil {
-		return fmt.Errorf("failed to acquire migration lock: %w", err)
+		return fmt.Errorf("failed to acquire migration lock (%w)", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("failed to check migration lock status: %w", err)
+		return fmt.Errorf("failed to check migration lock status (%w)", err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("migration lock is already held and not expired")
+		return errors.New("migration lock is already held and not expired")
 	}
 
 	return nil
@@ -107,7 +108,7 @@ func (m *manager) MigrationLockHeartbeat(ctx context.Context) error {
 	expiration := time.Now().Add(lockExpiryDuration)
 	_, err := m.db.DB().ExecContext(ctx, query, expiration, m.machineID)
 	if err != nil {
-		return fmt.Errorf("failed to update migration lock heartbeat: %w", err)
+		return fmt.Errorf("failed to update migration lock heartbeat (%w)", err)
 	}
 
 	return nil
@@ -117,11 +118,11 @@ func (m *manager) ListStatuses(ctx context.Context) ([]basemigration.PersistedSt
 	query := `SELECT order_num, status FROM migration_status ORDER BY order_num;`
 	rows, err := m.db.DB().QueryContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list statuses: %w", err)
+		return nil, fmt.Errorf("failed to list statuses (%w)", err)
 	}
 	defer func() {
 		if err := rows.Close(); err != nil {
-			logger.Errorf(ctx, "failed to close rows: %v", err)
+			logger.Errorf("Failed to close rows (%s).", err.Error())
 		}
 	}()
 
@@ -129,7 +130,7 @@ func (m *manager) ListStatuses(ctx context.Context) ([]basemigration.PersistedSt
 	for rows.Next() {
 		var status basemigration.PersistedStatus
 		if err := rows.Scan(&status.Order, &status.Status); err != nil {
-			return nil, fmt.Errorf("failed to scan status row: %w", err)
+			return nil, fmt.Errorf("failed to scan status row (%w)", err)
 		}
 		statuses = append(statuses, status)
 	}
@@ -145,7 +146,7 @@ func (m *manager) PersistStatus(ctx context.Context, order basemigration.Order, 
     `
 	_, err := m.db.DB().ExecContext(ctx, query, order, status, status)
 	if err != nil {
-		return fmt.Errorf("failed to persist status: %w", err)
+		return fmt.Errorf("failed to persist status (%w)", err)
 	}
 	return nil
 }
@@ -154,7 +155,7 @@ func (m *manager) ReleaseMigrationLock(ctx context.Context) error {
 	query := `DELETE FROM migration_lock WHERE machine_id = ?;`
 	_, err := m.db.DB().ExecContext(ctx, query, m.machineID)
 	if err != nil {
-		return fmt.Errorf("failed to release migration lock: %w", err)
+		return fmt.Errorf("failed to release migration lock (%w)", err)
 	}
 	return nil
 }

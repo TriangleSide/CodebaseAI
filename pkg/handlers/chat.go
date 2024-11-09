@@ -29,7 +29,7 @@ func (c *Chat) Stream(w http.ResponseWriter, r *http.Request) {
 		}
 		return tokenStream, http.StatusOK, nil
 	}, responders.WithErrorCallback(func(err error) {
-		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+		logger.Errorf("Error while handling request (%s).", err.Error())
 	}))
 }
 

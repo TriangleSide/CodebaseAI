@@ -32,7 +32,7 @@ func (p *Project) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		return project, http.StatusOK, nil
 	}, responders.WithErrorCallback(func(err error) {
-		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+		logger.Errorf("Error while handling request (%s).", err.Error())
 	}))
 }
 
@@ -48,7 +48,7 @@ func (p *Project) List(w http.ResponseWriter, r *http.Request) {
 			Projects: projectList,
 		}, http.StatusOK, nil
 	}, responders.WithErrorCallback(func(err error) {
-		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+		logger.Errorf("Error while handling request (%s).", err.Error())
 	}))
 }
 
@@ -62,7 +62,7 @@ func (p *Project) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		return project, http.StatusAccepted, nil
 	}, responders.WithErrorCallback(func(err error) {
-		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+		logger.Errorf("Error while handling request (%s).", err.Error())
 	}))
 }
 
@@ -80,7 +80,7 @@ func (p *Project) Delete(w http.ResponseWriter, r *http.Request) {
 			return http.StatusNoContent, nil
 		}
 	}, responders.WithErrorCallback(func(err error) {
-		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+		logger.Errorf("Error while handling request (%s).", err.Error())
 	}))
 }
 
@@ -98,7 +98,7 @@ func (p *Project) Update(w http.ResponseWriter, r *http.Request) {
 			return http.StatusNoContent, nil
 		}
 	}, responders.WithErrorCallback(func(err error) {
-		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+		logger.Errorf("Error while handling request (%s).", err.Error())
 	}))
 }
 

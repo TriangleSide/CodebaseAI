@@ -35,13 +35,12 @@ type fileContent struct {
 }
 
 func init() {
-	ctx := context.Background()
 	cfg, err := baseconfig.ProcessAndValidate[config.Config]()
 	if err != nil {
-		logger.Fatalf(ctx, "Failed to read the configuration (%s)", err.Error())
+		logger.Fatalf("Failed to read the configuration (%s)", err.Error())
 	}
 	if tokenizerCodec, err = tokenizer.ForModel(tokenizer.Model(cfg.ModelVersion)); err != nil {
-		logger.Fatalf(ctx, "Unable to get tokenizer codec for %s model.", cfg.ModelVersion)
+		logger.Fatalf("Unable to get tokenizer codec for %s model.", cfg.ModelVersion)
 	}
 	loadConfig("amalgam.json")
 }

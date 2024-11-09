@@ -19,7 +19,7 @@ func init() {
 			}
 			defer func() {
 				if err = database.Close(); err != nil {
-					logger.Errorf(ctx, "Failed to close database connection: %s", err.Error())
+					logger.Errorf("Failed to close database connection: %s", err.Error())
 				}
 			}()
 			_, err = database.DB().ExecContext(ctx, `

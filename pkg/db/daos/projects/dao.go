@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	_ "embed"
+	"errors"
 	"fmt"
 
 	"github.com/TriangleSide/CodebaseAI/pkg/models"
-	"github.com/TriangleSide/GoTools/pkg/logger"
 	"github.com/TriangleSide/GoTools/pkg/ptr"
 )
 
@@ -58,14 +58,14 @@ func NewDAO(db *sql.DB) DAO {
 	}
 }
 
-func (p *dao) Get(ctx context.Context, project *models.Project) error {
+func (p *dao) Get(ctx context.Context, project *models.Project) (returnErr error) {
 	statement, err := p.db.PrepareContext(ctx, getSql)
 	if err != nil {
 		return fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logger.Errorf(ctx, "Failed to close statement (%s).", err)
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to close statement (%w)", err))
 		}
 	}()
 
@@ -75,7 +75,7 @@ func (p *dao) Get(ctx context.Context, project *models.Project) error {
 	}
 	defer func() {
 		if err := rows.Close(); err != nil {
-			logger.Errorf(ctx, "Failed to close rows (%s).", err)
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to close rows (%w)", err))
 		}
 	}()
 
@@ -89,14 +89,14 @@ func (p *dao) Get(ctx context.Context, project *models.Project) error {
 	return fmt.Errorf("project not found (%+v)", project)
 }
 
-func (p *dao) List(ctx context.Context, params *ListParameters) ([]*models.Project, error) {
+func (p *dao) List(ctx context.Context, params *ListParameters) (projects []*models.Project, returnErr error) {
 	statement, err := p.db.PrepareContext(ctx, listSql)
 	if err != nil {
 		return nil, fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logger.Errorf(ctx, "Failed to close statement (%s).", err)
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to close statement (%w)", err))
 		}
 	}()
 
@@ -111,11 +111,11 @@ func (p *dao) List(ctx context.Context, params *ListParameters) ([]*models.Proje
 	}
 	defer func() {
 		if err := rows.Close(); err != nil {
-			logger.Errorf(ctx, "Failed to close rows (%s).", err.Error())
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to close rows (%w)", err))
 		}
 	}()
 
-	projects := make([]*models.Project, 0)
+	projects = make([]*models.Project, 0)
 	for rows.Next() {
 		project := &models.Project{}
 		if err := rows.Scan(&project.Id, &project.Path, &project.CreatedTime, &project.UpdateTime); err != nil {
@@ -127,14 +127,14 @@ func (p *dao) List(ctx context.Context, params *ListParameters) ([]*models.Proje
 	return projects, nil
 }
 
-func (p *dao) Create(ctx context.Context, project *models.Project) error {
+func (p *dao) Create(ctx context.Context, project *models.Project) (returnErr error) {
 	statement, err := p.db.PrepareContext(ctx, createSql)
 	if err != nil {
 		return fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logger.Errorf(ctx, "Failed to close statement (%s).", err)
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to close statement (%w)", err))
 		}
 	}()
 
@@ -152,14 +152,14 @@ func (p *dao) Create(ctx context.Context, project *models.Project) error {
 	return nil
 }
 
-func (p *dao) Delete(ctx context.Context, project *models.Project) (bool, error) {
+func (p *dao) Delete(ctx context.Context, project *models.Project) (deleted bool, returnErr error) {
 	statement, err := p.db.PrepareContext(ctx, deleteSql)
 	if err != nil {
 		return false, fmt.Errorf("error preparing SQL statement (%w)", err)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logger.Errorf(ctx, "Failed to close statement (%s).", err)
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to close statement (%w)", err))
 		}
 	}()
 
@@ -176,7 +176,7 @@ func (p *dao) Delete(ctx context.Context, project *models.Project) (bool, error)
 	return rowsAffected > 0, nil
 }
 
-func (p *dao) Update(ctx context.Context, project *models.Project) (bool, error) {
+func (p *dao) Update(ctx context.Context, project *models.Project) (updated bool, returnErr error) {
 	if project.Id == nil {
 		return false, fmt.Errorf("project ID is nil")
 	}
@@ -187,7 +187,7 @@ func (p *dao) Update(ctx context.Context, project *models.Project) (bool, error)
 	}
 	defer func() {
 		if err := statement.Close(); err != nil {
-			logger.Errorf(ctx, "Failed to close statement (%s).", err)
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to close statement (%w)", err))
 		}
 	}()
 

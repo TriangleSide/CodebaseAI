@@ -63,7 +63,7 @@ func (model *openaiChat) Stream(ctx context.Context, request *models.ChatRequest
 		}
 		defer func() {
 			if err := openaiStream.Close(); err != nil {
-				logger.Errorf(ctx, "Failed to close OpenAI stream (%s).", err)
+				logger.Errorf("Failed to close OpenAI stream (%s).", err.Error())
 			}
 		}()
 

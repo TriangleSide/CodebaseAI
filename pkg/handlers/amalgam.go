@@ -30,13 +30,13 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		err := a.projectDAO.Get(r.Context(), project)
 		if err != nil {
-			logger.Errorf(r.Context(), "Failed to get project (%s).", err.Error())
+			logger.Errorf("Failed to get project (%s).", err.Error())
 			return nil, 0, err
 		}
 
 		amalgamContent, tokenCount, err := amalgam.Get(r.Context(), *project.Path)
 		if err != nil {
-			logger.Errorf(r.Context(), "Failed to get amalgam (%s).", err.Error())
+			logger.Errorf("Failed to get amalgam (%s).", err.Error())
 			return nil, 0, err
 		}
 
@@ -45,7 +45,7 @@ func (a *Amalgam) Get(w http.ResponseWriter, r *http.Request) {
 			TokenCount: tokenCount,
 		}, http.StatusOK, nil
 	}, responders.WithErrorCallback(func(err error) {
-		logger.Errorf(r.Context(), "Error while handling request (%s).", err.Error())
+		logger.Errorf("Error while handling request (%s).", err.Error())
 	}))
 }
 
